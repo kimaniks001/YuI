@@ -19,6 +19,10 @@ import StoreOfferDetail from './pages/StoreOfferDetail';
 import SecureLinkJoin from './pages/SecureLinkJoin';
 import CreateJourney from './pages/CreateJourney';
 import AgreementDetailWorkspace from './pages/AgreementDetailWorkspace';
+import AgreementConsultation from './pages/AgreementConsultation';
+import AgreementRecovery from './pages/AgreementRecovery';
+import MarketBridge from './pages/MarketBridge';
+import MarketSafety from './pages/MarketSafety';
 import PublicGroupSecureLink from './pages/PublicGroupSecureLink';
 import SecurePayHome from './pages/SecurePayHome';
 import MyMarket from './pages/MyMarket';
@@ -131,12 +135,16 @@ function AppShell() {
       <Route path="/market" element={<Protected><MyMarket /></Protected>} />
       <Route path="/market/flows" element={<Protected><MarketFlows /></Protected>} />
       <Route path="/market/statements" element={<Protected><MarketStatements /></Protected>} />
+      <Route path="/market/continue" element={<MarketBridge />} />
+      <Route path="/market/safety" element={<MarketSafety />} />
       <Route path="/store" element={<Protected><StoreOwnerStudio /></Protected>} />
       <Route path="/store/share" element={<Protected><StoreSharingStudio /></Protected>} />
       <Route path="/plug" element={<Protected><PlugDashboard /></Protected>} />
       <Route path="/builders" element={<Protected><PlugDashboard /></Protected>} />
       <Route path="/agreements" element={<Protected><TraderAgreements /></Protected>} />
       <Route path="/agreements/:agreementId" element={<Protected><AgreementDetailWorkspace /></Protected>} />
+      <Route path="/agreements/:agreementId/consultation" element={<Protected><AgreementConsultation /></Protected>} />
+      <Route path="/agreements/:agreementId/recovery" element={<Protected><AgreementRecovery /></Protected>} />
       <Route path="/actions" element={<Protected><TraderActionCentre /></Protected>} />
       <Route path="/money" element={<Protected><MoneySpace /></Protected>} />
       <Route path="/community" element={<Protected><TraderCommunity /></Protected>} />
