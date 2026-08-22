@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import MarketOpeningRitual from '../components/MarketOpeningRitual';
 import { signInPath } from './returnPath';
 
 export default function RequireAuth({ children }: { children: ReactNode }) {
@@ -19,5 +20,8 @@ export default function RequireAuth({ children }: { children: ReactNode }) {
     return <Navigate to={signInPath(`${location.pathname}${location.search}`)} replace />;
   }
 
-  return <>{children}</>;
+  return <>
+    <MarketOpeningRitual authenticatedEntry traderKey={user.ksNumber} />
+    {children}
+  </>;
 }

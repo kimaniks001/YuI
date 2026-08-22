@@ -24,40 +24,40 @@ import LivingSecurePayMark from './LivingSecurePayMark';
 
 const groups = [
   {
-    label: 'Enter the Market',
+    label: 'Learn the Market',
     items: [
-      { to: '/', label: 'Market entrance', icon: Home },
-      { to: '/create', label: 'Start an agreement', icon: Sparkles },
-      { to: '/signin', label: 'Sign-in journey', icon: UserPlus },
-      { to: '/ks/KS2145', label: 'Digital Store', icon: ShoppingBag },
+      { to: '/trainer/home', label: 'Market entrance demo', icon: Home },
+      { to: '/trainer/create', label: 'Start an agreement demo', icon: Sparkles },
+      { to: '/trainer/signin', label: 'Sign-in demo', icon: UserPlus },
+      { to: '/trainer/store', label: 'Digital Store demo', icon: ShoppingBag },
     ],
   },
   {
-    label: 'Run your Market',
+    label: 'Run your demo Market',
     items: [
-      { to: '/dashboard', label: 'Trader Home', icon: Store },
-      { to: '/market', label: 'My Market', icon: LayoutGrid },
-      { to: '/agreements/demo', label: 'Agreement room', icon: FileCheck2 },
-      { to: '/actions', label: 'Actions', icon: ArrowRight },
+      { to: '/trainer/dashboard', label: 'Trader Home', icon: Store },
+      { to: '/trainer/market', label: 'My Market', icon: LayoutGrid },
+      { to: '/trainer/agreement', label: 'Agreement room', icon: FileCheck2 },
+      { to: '/trainer/actions', label: 'Actions', icon: ArrowRight },
     ],
   },
   {
-    label: 'Money & people',
+    label: 'Money & people demos',
     items: [
-      { to: '/money', label: 'Money rooms', icon: Banknote },
-      { to: '/market/flows', label: 'SecureFlow', icon: Network },
-      { to: '/community', label: 'Circle & growth', icon: Network },
-      { to: '/explore/review', label: 'Review & recovery', icon: MessageCircle },
+      { to: '/trainer/money', label: 'Money rooms', icon: Banknote },
+      { to: '/trainer/flows', label: 'SecureFlow', icon: Network },
+      { to: '/trainer/community', label: 'Circle & growth', icon: Network },
+      { to: '/trainer/recovery', label: 'Recovery & Resolution', icon: MessageCircle },
     ],
   },
   {
     label: 'Learn & build',
     items: [
-      { to: '/play', label: 'Play the Market', icon: Trophy },
-      { to: '/developers', label: 'Developer Market', icon: Code2 },
-      { to: '/help', label: 'Help & knowledge', icon: BookOpen },
-      { to: '/settings', label: 'Explorer settings', icon: Settings },
-      { to: '/explore', label: 'All rooms', icon: GraduationCap },
+      { to: '/game', label: 'Enter the Game', icon: Trophy },
+      { to: '/trainer/developers', label: 'Developer demo', icon: Code2 },
+      { to: '/trainer/help', label: 'Help & knowledge', icon: BookOpen },
+      { to: '/trainer/settings', label: 'Trainer settings', icon: Settings },
+      { to: '/trainer', label: 'All Trainer rooms', icon: GraduationCap },
     ],
   },
 ];
@@ -85,7 +85,7 @@ export default function ExplorerDock() {
         aria-controls="yui-explorer-drawer"
       >
         <LivingSecurePayMark state="guiding" size="xs" presence="polite" decorative />
-        <span><strong>YUI v1</strong><small>Explorer</small></span>
+        <span><strong>SecurePay</strong><small>Trainer</small></span>
         <Menu size={15} />
       </button>
 
@@ -95,14 +95,14 @@ export default function ExplorerDock() {
         <div className="yui-explorer-head">
           <div className="yui-explorer-title">
             <LivingSecurePayMark state="guiding" size="sm" presence="present" decorative />
-            <div><p>SECUREPAY YUI v1</p><h2>Explore the whole Market</h2></div>
+            <div><p>SECUREPAY TRAINER</p><h2>Learn the whole Market</h2></div>
           </div>
-          <button type="button" onClick={() => setOpen(false)} aria-label="Close explorer"><X size={18} /></button>
+          <button type="button" onClick={() => setOpen(false)} aria-label="Close Trainer"><X size={18} /></button>
         </div>
 
         <div className="yui-explorer-safety">
-          <strong>Training mode</strong>
-          <span>No authentication · no live API · no real money</span>
+          <strong>Simulated learning world</strong>
+          <span>No live API · no real identity · no real money</span>
         </div>
 
         <div className="yui-explorer-groups">
@@ -121,8 +121,8 @@ export default function ExplorerDock() {
         </div>
 
         <div className="yui-explorer-foot">
-          <Link to="/explore">Open journey map <ArrowRight size={14} /></Link>
-          <span>When real authentication and money are connected, this mode can remain as a separate training environment.</span>
+          <Link to="/trainer">Open Trainer map <ArrowRight size={14} /></Link>
+          <span>Trainer screens can look realistic, but they never create Market identity, agreement, payment, Payment Ready, release or settlement truth.</span>
         </div>
       </aside>
     </>

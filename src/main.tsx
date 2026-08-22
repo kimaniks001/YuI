@@ -1,13 +1,15 @@
 import 'leaflet/dist/leaflet.css';
 import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider } from './lib/auth';
 import { MarketAtmosphereBackdrop, MarketAtmosphereProvider } from './lib/marketAtmosphere';
 import { SECUREPAY_EXPLORER_MODE } from './lib/explorerMode';
+import { getWorldFromPath } from './lib/worldMode';
 import RequireAuth from './routing/RequireAuth';
 import FloatingAssistant from './components/FloatingAssistant';
 import ExplorerDock from './components/ExplorerDock';
+import WorldSwitcher from './components/WorldSwitcher';
 import Home from './pages/Home';
 import SignIn from './pages/SignIn';
 import Signup from './pages/Signup';
@@ -47,9 +49,8 @@ import PlayMarketBoard from './pages/PlayMarketBoard';
 import PlayMarketProject from './pages/PlayMarketProject';
 import PlayMarketLeaderboard from './pages/PlayMarketLeaderboard';
 
-// Fixture-backed experience surfaces. In YUI v1 Explorer mode these are the
-// canonical training rooms. When Explorer mode is disabled they remain local
-// visual-review surfaces only.
+// Fixture-backed experience surfaces. MW-01 gives them dedicated Trainer
+// routes instead of allowing an environment flag to replace real Market URLs.
 import ReviewGallery from './review/ReviewGallery';
 import PreviewJourneys from './pages/PreviewJourneys';
 import PreviewWorkspacePage from './pages/PreviewWorkspacePage';
@@ -85,6 +86,7 @@ import './batch10-system-responsive.css';
 import './batch11-atmosphere-certification.css';
 import './yui-v1-explorer.css';
 import './play-market.css';
+import './world-switcher.css';
 
 function Protected({ children }: { children: ReactNode }) {
   return <RequireAuth>{children}</RequireAuth>;
@@ -92,48 +94,42 @@ function Protected({ children }: { children: ReactNode }) {
 
 function AppShell() {
   const location = useLocation();
+  const world = getWorldFromPath(location.pathname);
   const reviewEnabled = import.meta.env.DEV || SECUREPAY_EXPLORER_MODE;
   const isReviewSurface = location.pathname === '/review' || location.pathname.startsWith('/preview/');
 
-  return <div className={`sp-app-frame ${SECUREPAY_EXPLORER_MODE ? 'is-yui-v1-explorer' : ''}`}>
+  return <div className={`sp-app-frame world-${world}`} data-securepay-world={world}>
     <MarketAtmosphereBackdrop />
     <Routes>
-      {/* PUBLIC MARKET ENTRANCE. The approved signed-out Home remains real in
-          Explorer mode; all paths beyond it are safe training experiences. */}
+      {/* REAL MARKET. These canonical URLs always render Market components.
+          Real authentication and all authoritative state remain SecurePayAPI-owned. */}
       <Route path="/" element={<Home />} />
-      <Route path="/signin" element={SECUREPAY_EXPLORER_MODE ? <SignIn previewMode /> : <SignIn />} />
-      <Route path="/signup" element={SECUREPAY_EXPLORER_MODE ? <Signup previewMode /> : <Signup />} />
-      <Route path="/activate" element={SECUREPAY_EXPLORER_MODE ? <KSActivation previewMode /> : <KSActivation />} />
-      <Route path="/activation" element={SECUREPAY_EXPLORER_MODE ? <KSActivation previewMode /> : <KSActivation />} />
-      <Route path="/verify" element={SECUREPAY_EXPLORER_MODE ? <KSActivation previewMode /> : <KSActivation />} />
-      <Route path="/ks/:ksId" element={SECUREPAY_EXPLORER_MODE ? <PreviewDigitalStore /> : <KSProfile />} />
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/activate" element={<KSActivation />} />
+      <Route path="/activation" element={<KSActivation />} />
+      <Route path="/verify" element={<KSActivation />} />
+      <Route path="/ks/:ksId" element={<KSProfile />} />
+      <Route path="/create" element={<CreateJourney />} />
+      <Route path="/create/journey" element={<CreateJourney />} />
+      <Route path="/securelink/join" element={<SecureLinkJoin />} />
+      <Route path="/securelink/join/:token" element={<SecureLinkJoin />} />
+      <Route path="/group/:slug" element={<PublicGroupSecureLink />} />
+      <Route path="/dashboard" element={<Protected><SecurePayHome /></Protected>} />
+      <Route path="/profile" element={<Protected><SecurePayHome /></Protected>} />
+      <Route path="/market" element={<Protected><MyMarket /></Protected>} />
+      <Route path="/market/flows" element={<Protected><MarketFlows /></Protected>} />
+      <Route path="/market/statements" element={<Protected><MarketStatements /></Protected>} />
+      <Route path="/agreements" element={<Protected><TraderAgreements /></Protected>} />
+      <Route path="/agreements/:agreementId" element={<Protected><AgreementDetailWorkspace /></Protected>} />
+      <Route path="/actions" element={<Protected><TraderActionCentre /></Protected>} />
+      <Route path="/money" element={<Protected><MoneySpace /></Protected>} />
+      <Route path="/community" element={<Protected><TraderCommunity /></Protected>} />
+      <Route path="/referrals" element={<Protected><TraderCommunity /></Protected>} />
+      <Route path="/settings" element={<Protected><TraderSettings /></Protected>} />
+      <Route path="/developers" element={<Protected><DeveloperJourney /></Protected>} />
 
-      {/* CREATION AND JOINING. In Explorer mode these never create backend
-          identity, agreement or financial truth. */}
-      <Route path="/create" element={SECUREPAY_EXPLORER_MODE ? <CreateJourney previewMode /> : <CreateJourney />} />
-      <Route path="/create/journey" element={SECUREPAY_EXPLORER_MODE ? <CreateJourney previewMode /> : <CreateJourney />} />
-      <Route path="/securelink/join" element={SECUREPAY_EXPLORER_MODE ? <PreviewJoiningPage /> : <SecureLinkJoin />} />
-      <Route path="/securelink/join/:token" element={SECUREPAY_EXPLORER_MODE ? <PreviewJoiningPage /> : <SecureLinkJoin />} />
-      <Route path="/group/:slug" element={SECUREPAY_EXPLORER_MODE ? <PreviewJoiningPage /> : <PublicGroupSecureLink />} />
-
-      {/* SIGNED-IN MARKET. YUI v1 intentionally opens these canonical URLs to
-          fixture-backed experience rooms with no authentication or live API.
-          Set VITE_SECUREPAY_EXPLORER_MODE=false to restore real auth gates. */}
-      <Route path="/dashboard" element={SECUREPAY_EXPLORER_MODE ? <PreviewTraderHome /> : <Protected><SecurePayHome /></Protected>} />
-      <Route path="/profile" element={SECUREPAY_EXPLORER_MODE ? <PreviewDigitalStore /> : <Protected><SecurePayHome /></Protected>} />
-      <Route path="/market" element={SECUREPAY_EXPLORER_MODE ? <PreviewMarketPage /> : <Protected><MyMarket /></Protected>} />
-      <Route path="/market/flows" element={SECUREPAY_EXPLORER_MODE ? <PreviewFlowCommunity /> : <Protected><MarketFlows /></Protected>} />
-      <Route path="/market/statements" element={SECUREPAY_EXPLORER_MODE ? <PreviewMoneyRooms /> : <Protected><MarketStatements /></Protected>} />
-      <Route path="/agreements" element={SECUREPAY_EXPLORER_MODE ? <PreviewMarketPage /> : <Protected><TraderAgreements /></Protected>} />
-      <Route path="/agreements/:agreementId" element={SECUREPAY_EXPLORER_MODE ? <PreviewWorkspacePage /> : <Protected><AgreementDetailWorkspace /></Protected>} />
-      <Route path="/actions" element={SECUREPAY_EXPLORER_MODE ? <PreviewOperationalPage /> : <Protected><TraderActionCentre /></Protected>} />
-      <Route path="/money" element={SECUREPAY_EXPLORER_MODE ? <PreviewMoneyRooms /> : <Protected><MoneySpace /></Protected>} />
-      <Route path="/community" element={SECUREPAY_EXPLORER_MODE ? <PreviewFlowCommunity /> : <Protected><TraderCommunity /></Protected>} />
-      <Route path="/referrals" element={SECUREPAY_EXPLORER_MODE ? <PreviewFlowCommunity /> : <Protected><TraderCommunity /></Protected>} />
-      <Route path="/settings" element={SECUREPAY_EXPLORER_MODE ? <ExplorerSettings /> : <Protected><TraderSettings /></Protected>} />
-      <Route path="/developers" element={SECUREPAY_EXPLORER_MODE ? <PreviewDeveloperJourney /> : <Protected><DeveloperJourney /></Protected>} />
-
-      {/* PUBLIC GUIDANCE / TRUST. */}
+      {/* PUBLIC GUIDANCE / TRUST. These are informational Market surfaces. */}
       <Route path="/situations" element={<SituationsPage />} />
       <Route path="/help" element={<HelpCenter />} />
       <Route path="/help/articles" element={<HelpArticlesList />} />
@@ -148,24 +144,58 @@ function AppShell() {
       <Route path="/compliance" element={<CompliancePage />} />
       <Route path="/not-a-bank" element={<NotABankPage />} />
 
-      {/* YUI v1 EXPLORER MAP. These routes are safe to keep in a dedicated
-          training deployment even after the production money tap is enabled. */}
-      {SECUREPAY_EXPLORER_MODE && <>
-        <Route path="/explore" element={<ExplorerMap />} />
-        <Route path="/explore/journeys" element={<PreviewJourneys />} />
-        <Route path="/explore/review" element={<PreviewReviewRecovery />} />
-        <Route path="/explore/system" element={<PreviewSystemStates />} />
-        <Route path="/explore/responsive" element={<PreviewResponsiveCertification />} />
-        <Route path="/explore/themes" element={<PreviewMarketThemes />} />
-        <Route path="/explore/certification" element={<PreviewVisualCertification />} />
-        <Route path="/play" element={<PlayMarketHome />} />
-        <Route path="/play/market" element={<PlayMarketBoard />} />
-        <Route path="/play/project/:projectId" element={<PlayMarketProject />} />
-        <Route path="/play/leaderboard" element={<PlayMarketLeaderboard />} />
-      </>}
+      {/* TRAINER. Every route below is fixture-backed or preview-mode and the
+          API client additionally hard-blocks live calls while the URL is in
+          the Trainer namespace. MW-02 will turn this into the guided product. */}
+      <Route path="/trainer" element={<ExplorerMap />} />
+      <Route path="/trainer/home" element={<Home reviewMode />} />
+      <Route path="/trainer/signin" element={<SignIn previewMode />} />
+      <Route path="/trainer/signup" element={<Signup previewMode />} />
+      <Route path="/trainer/activate" element={<KSActivation previewMode />} />
+      <Route path="/trainer/journeys" element={<PreviewJourneys />} />
+      <Route path="/trainer/create" element={<CreateJourney previewMode />} />
+      <Route path="/trainer/join" element={<PreviewJoiningPage />} />
+      <Route path="/trainer/dashboard" element={<PreviewTraderHome />} />
+      <Route path="/trainer/market" element={<PreviewMarketPage />} />
+      <Route path="/trainer/agreement" element={<PreviewWorkspacePage />} />
+      <Route path="/trainer/actions" element={<PreviewOperationalPage />} />
+      <Route path="/trainer/store" element={<PreviewDigitalStore />} />
+      <Route path="/trainer/money" element={<PreviewMoneyRooms />} />
+      <Route path="/trainer/flows" element={<PreviewFlowCommunity />} />
+      <Route path="/trainer/community" element={<PreviewFlowCommunity />} />
+      <Route path="/trainer/recovery" element={<PreviewReviewRecovery />} />
+      <Route path="/trainer/developers" element={<PreviewDeveloperJourney />} />
+      <Route path="/trainer/help" element={<HelpCenter />} />
+      <Route path="/trainer/settings" element={<ExplorerSettings />} />
+      <Route path="/trainer/system" element={<PreviewSystemStates />} />
+      <Route path="/trainer/responsive" element={<PreviewResponsiveCertification />} />
+      <Route path="/trainer/themes" element={<PreviewMarketThemes />} />
+      <Route path="/trainer/certification" element={<PreviewVisualCertification />} />
 
-      {/* REVIEW ROOM. Explorer builds retain this even outside Vite DEV so the
-          same package can be deployed as a training/education environment. */}
+      {/* Legacy Explorer aliases remain safe and redirect into Trainer. */}
+      <Route path="/explore" element={<Navigate to="/trainer" replace />} />
+      <Route path="/explore/journeys" element={<Navigate to="/trainer/journeys" replace />} />
+      <Route path="/explore/review" element={<Navigate to="/trainer/recovery" replace />} />
+      <Route path="/explore/system" element={<Navigate to="/trainer/system" replace />} />
+      <Route path="/explore/responsive" element={<Navigate to="/trainer/responsive" replace />} />
+      <Route path="/explore/themes" element={<Navigate to="/trainer/themes" replace />} />
+      <Route path="/explore/certification" element={<Navigate to="/trainer/certification" replace />} />
+
+      {/* GAME. This is still the accepted Play-the-Market prototype. MW-13+
+          will replace its local authority with the formal Game domain. */}
+      <Route path="/game" element={<PlayMarketHome />} />
+      <Route path="/game/market" element={<PlayMarketBoard />} />
+      <Route path="/game/project/:projectId" element={<PlayMarketProject />} />
+      <Route path="/game/leaderboard" element={<PlayMarketLeaderboard />} />
+
+      {/* Legacy /play routes remain simulated and never gain Market API access. */}
+      <Route path="/play" element={<PlayMarketHome />} />
+      <Route path="/play/market" element={<PlayMarketBoard />} />
+      <Route path="/play/project/:projectId" element={<PlayMarketProject />} />
+      <Route path="/play/leaderboard" element={<PlayMarketLeaderboard />} />
+
+      {/* REVIEW ROOM. Development/review surfaces remain separate from the
+          real Market and are also classified as simulated by worldMode. */}
       {reviewEnabled && <>
         <Route path="/review" element={<ReviewGallery />} />
         <Route path="/preview/home" element={<Home reviewMode />} />
@@ -195,8 +225,9 @@ function AppShell() {
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
 
-    {!isReviewSurface && <FloatingAssistant />}
-    {SECUREPAY_EXPLORER_MODE && <ExplorerDock />}
+    {world === 'market' && !isReviewSurface && <FloatingAssistant />}
+    {world === 'trainer' && !isReviewSurface && <ExplorerDock />}
+    {!isReviewSurface && <WorldSwitcher />}
   </div>;
 }
 

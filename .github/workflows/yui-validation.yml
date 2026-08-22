@@ -1,0 +1,35 @@
+name: YUI Validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - yui-accepted-baseline-2026-08-22
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint (baseline debt report)
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Certify YUI
+        run: npm run certify

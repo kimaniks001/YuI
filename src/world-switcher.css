@@ -1,0 +1,130 @@
+.sp-world-switcher {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 32px);
+  padding: 8px;
+  border: 1px solid rgba(26, 26, 26, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 253, 248, 0.96);
+  box-shadow: 0 12px 40px rgba(20, 30, 18, 0.13);
+  backdrop-filter: blur(16px);
+}
+
+.sp-world-switcher__status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 150px;
+  padding: 0 8px;
+  color: #315f1c;
+}
+
+.sp-world-switcher--trainer .sp-world-switcher__status { color: #8a5a10; }
+.sp-world-switcher--game .sp-world-switcher__status { color: #6a4210; }
+
+.sp-world-switcher__status span {
+  display: grid;
+  line-height: 1.15;
+}
+
+.sp-world-switcher__status strong {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.sp-world-switcher__status small {
+  margin-top: 3px;
+  font-size: 9px;
+  color: rgba(26, 26, 26, 0.55);
+  white-space: nowrap;
+}
+
+.sp-world-switcher__nav {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 12px;
+  background: rgba(26, 26, 26, 0.04);
+}
+
+.sp-world-switcher__nav a {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  border-radius: 9px;
+  color: rgba(26, 26, 26, 0.58);
+  font-size: 11px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.sp-world-switcher__nav a:hover,
+.sp-world-switcher__nav a:focus-visible {
+  color: #1a1a1a;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.sp-world-switcher__nav a.is-current {
+  color: #fff;
+  background: #3a7a1f;
+}
+
+.sp-world-switcher--trainer .sp-world-switcher__nav a.is-current { background: #a86b10; }
+.sp-world-switcher--game .sp-world-switcher__nav a.is-current { background: #7b4d18; }
+
+.sp-world-switcher__real {
+  min-height: 34px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0 11px;
+  background: #173b20;
+  color: white;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sp-world-switcher__real:hover,
+.sp-world-switcher__real:focus-visible { background: #245a30; }
+
+.sp-app-frame.world-trainer::after,
+.sp-app-frame.world-game::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  border: 3px solid rgba(168, 107, 16, 0.26);
+}
+
+.sp-app-frame.world-game::after { border-color: rgba(123, 77, 24, 0.28); }
+
+@media (max-width: 760px) {
+  .sp-world-switcher {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    justify-content: space-between;
+    gap: 5px;
+    padding: 6px;
+  }
+
+  .sp-world-switcher__status { min-width: 0; padding: 0 4px; }
+  .sp-world-switcher__status small { display: none; }
+  .sp-world-switcher__nav a { min-height: 36px; padding: 0 8px; }
+  .sp-world-switcher__nav a span { display: none; }
+  .sp-world-switcher__real { min-height: 36px; padding: 0 9px; }
+}
+
+@media (max-width: 420px) {
+  .sp-world-switcher__status strong { font-size: 9px; }
+  .sp-world-switcher__real { font-size: 9px; }
+}
