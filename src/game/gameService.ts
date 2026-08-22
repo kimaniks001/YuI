@@ -1,7 +1,6 @@
 import { deterministicScenario, GAME_SCENARIOS } from './scenarios';
 import { scoreGameProfile } from './scoring';
 import type {
-  GameAgreement,
   GameAgreementKind,
   GameCardFamily,
   GameChallenge,
@@ -234,11 +233,13 @@ export const browserGameService: GameService = {
   startRoom() {
     return mutate(snapshot => {
       if (!snapshot.room) throw new Error('No Game room exists.');
-      if (snapshot.room.members.length > 2 && snapshot.room.groupSessionBillingState === 'PAYER_RULE_UNRESOLVED') throw new Error('Group Game billing payer rule is not locked yet. The room can be tested locally but live paid session billing stays disabled.');
       if (!snapshot.room.members.every(member => member.ready)) throw new Error('Everyone must be ready before the room starts.');
       snapshot.room.status = 'ACTIVE';
       snapshot.room.round = 1;
       snapshot.room.updatedAt = now();
+      if (snapshot.room.members.length > 2 && snapshot.room.groupSessionBillingState === 'PAYER_RULE_UNRESOLVED') {
+        snapshot.profile.history.unshift({ id: id('history'), at: now(), title: 'Group Game room tested locally', detail: 'The KES 100/hour concept remains unbilled because the host/room/player payer rule is not yet locked.' });
+      }
     });
   },
 
