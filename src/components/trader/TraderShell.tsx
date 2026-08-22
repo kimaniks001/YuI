@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Bell, FileText, Home, LayoutGrid, ListChecks, Split, Zap } from 'lucide-react';
+import { Bell, FileText, Home, LayoutGrid, ListChecks, Split, Store, Zap } from 'lucide-react';
 import LivingSecurePayMark from '../LivingSecurePayMark';
 import { useAuth } from '../../lib/auth';
 import EnvironmentBadge from './EnvironmentBadge';
@@ -72,6 +72,7 @@ export default function TraderShell({ children }: { children: ReactNode }) {
               {accountOpen && <div id="trader-account-menu" aria-label="Account options" className="absolute right-0 top-[calc(100%+8px)] w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-ink/8 bg-white p-2 shadow-xl">
                 <div className="border-b border-ink/8 px-3 py-2"><p className="text-xs text-ink/40">Signed in as</p><p className="mt-0.5 truncate text-sm font-semibold">{identity}</p></div>
                 <Link to="/signin" onClick={() => setAccountOpen(false)} className="mt-1 flex min-h-11 items-center rounded-xl px-3 text-sm hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700">Account</Link>
+                <Link to="/store" onClick={() => setAccountOpen(false)} className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700"><Store size={15} aria-hidden="true" /> My KS Store</Link>
                 <Link to="/market" onClick={() => setAccountOpen(false)} className="flex min-h-11 items-center rounded-xl px-3 text-sm hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700">My Market</Link>
                 <Link to="/market/flows" onClick={() => setAccountOpen(false)} className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700"><Split size={15} aria-hidden="true" /> Money flows</Link>
                 <Link to="/market/statements" onClick={() => setAccountOpen(false)} className="flex min-h-11 items-center rounded-xl px-3 text-sm hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700">Statements</Link>
