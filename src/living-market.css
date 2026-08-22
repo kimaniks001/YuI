@@ -1,0 +1,91 @@
+/* SecurePay Living Market treatment
+   Motion is information: attention is lively, waiting is calm, completion rests.
+   Journey rooms should affirm and guide, never feel like an exam hall. */
+
+.lm-page{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 74% 13%,rgba(89,152,61,.11),transparent 30%),
+    radial-gradient(circle at 8% 68%,rgba(244,119,24,.055),transparent 24%),
+    linear-gradient(180deg,#fbfcf7 0%,#f7f4ec 52%,#fbfaf5 100%);
+}
+.lm-ambient-mark{position:absolute;border:2px solid rgba(54,119,35,.055);border-radius:50%;pointer-events:none}
+.lm-ambient-mark:before{content:"";position:absolute;left:50%;top:20%;width:34%;height:42%;transform:translateX(-50%);border:10px solid rgba(54,119,35,.04);border-bottom:0;border-radius:999px 999px 0 0}
+.lm-ambient-mark:after{content:"";position:absolute;left:29%;top:55%;width:42%;height:13%;border:10px solid rgba(54,119,35,.04);border-top:0;border-radius:0 0 999px 999px}
+.lm-ambient-mark-a{width:520px;height:520px;right:-180px;top:80px}
+.lm-ambient-mark-b{width:350px;height:350px;left:-210px;top:780px}
+.lm-thread{position:absolute;top:290px;left:-5%;width:110%;height:120px;transform:rotate(-4deg);opacity:.38;pointer-events:none}
+.lm-thread:before,.lm-thread:after{content:"";position:absolute;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,rgba(46,128,40,.16),rgba(244,119,24,.12),transparent);border-radius:50%}
+.lm-thread:before{top:36px}.lm-thread:after{top:66px}
+.lm-thread span{position:absolute;width:7px;height:7px;border-radius:50%;background:#3a7a1f;box-shadow:0 0 0 5px rgba(58,122,31,.08)}
+.lm-thread span:nth-child(1){top:32px;left:20%;animation:lm-travel 7s ease-in-out infinite}
+.lm-thread span:nth-child(2){top:62px;left:57%;background:#f47718;animation:lm-travel 8.5s ease-in-out infinite reverse}
+.lm-thread span:nth-child(3){top:32px;left:80%;animation:lm-travel 9.5s ease-in-out infinite}
+
+.lm-reassurance{display:flex;align-items:flex-start;gap:12px;max-width:760px;padding:14px 16px;border:1px solid rgba(58,122,31,.12);border-radius:18px;background:rgba(255,255,255,.72);box-shadow:0 10px 34px rgba(28,67,31,.035);color:#315f1c}
+.lm-reassurance>svg{margin-top:2px;flex:0 0 auto}.lm-reassurance p:first-child{font-size:14px}.lm-reassurance p:last-child{margin-top:2px;font-size:12px;line-height:1.55;color:rgba(49,95,28,.68)}
+
+.lm-market-card{position:relative;overflow:hidden;transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.lm-market-card:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:transparent;transition:background .22s ease}
+.lm-market-card:hover{transform:translateY(-2px);box-shadow:0 14px 38px rgba(28,67,31,.07)}
+.lm-market-card.is-attention:before{background:linear-gradient(#f47718,#f8b26c)}
+.lm-market-card.is-attention:hover{border-color:rgba(244,119,24,.42)}
+.lm-market-card.is-waiting:hover{border-color:rgba(58,122,31,.2)}
+.lm-market-card.is-complete:hover{border-color:rgba(58,122,31,.22)}
+.lm-story-icon{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex:0 0 48px;border-radius:17px;color:#2f7d20;background:#edf6e7;border:1px solid rgba(58,122,31,.1);transition:transform .24s ease}
+.lm-story-icon.is-attention{color:#e7640a;background:#fff2e8;border-color:rgba(244,119,24,.16)}
+.lm-story-icon.is-complete{background:#f3f8ef}.lm-story-spark{position:absolute;right:6px;top:6px;width:5px;height:5px;border-radius:50%;background:#6aa84f;opacity:0;transform:scale(.4)}
+.lm-market-card.is-attention:hover .lm-story-icon{animation:lm-wiggle .5s ease}.lm-market-card.is-attention:hover .lm-story-spark{animation:lm-spark .62s ease}
+.lm-market-card.is-waiting .lm-story-icon{animation:lm-breathe 4.8s ease-in-out infinite}.lm-market-card.is-complete:hover .lm-story-icon{animation:lm-complete .5s ease}
+.lm-card-tail{display:flex;align-items:center;gap:10px}.lm-attention-bead{display:block;width:7px;height:7px;border-radius:50%;background:#f47718;box-shadow:0 0 0 0 rgba(244,119,24,.28);animation:lm-pulse 2.2s ease-out infinite}
+
+.lm-live-dot{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 9px;background:#f3f8ef;color:#315f1c;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}.lm-live-dot span{width:6px;height:6px;border-radius:50%;background:#3a7a1f;animation:lm-pulse 2.4s ease-out infinite}
+.lm-activity-row{transition:padding-left .2s ease,background .2s ease}.lm-activity-row:hover{padding-left:6px;background:linear-gradient(90deg,rgba(58,122,31,.035),transparent)}
+
+.journey-room-shell,.journey-gallery-room,.journey-workspace-room,.journey-operational-room{position:relative;overflow:hidden;background:
+  radial-gradient(circle at 84% 16%,rgba(75,142,45,.09),transparent 26%),
+  radial-gradient(circle at 8% 78%,rgba(244,119,24,.055),transparent 22%),
+  linear-gradient(180deg,#fffdf8 0%,#fbfcf7 100%)!important}
+.journey-wall-mark{position:fixed;z-index:0;pointer-events:none;border-radius:50%;border:2px solid rgba(58,122,31,.05)}
+.journey-wall-mark:before{content:"";position:absolute;left:50%;top:22%;width:28%;height:42%;transform:translateX(-50%);border:8px solid rgba(58,122,31,.035);border-bottom:0;border-radius:999px 999px 0 0}
+.journey-wall-mark-a{width:380px;height:380px;right:-180px;top:110px}.journey-wall-mark-b{width:260px;height:260px;left:-160px;bottom:80px}
+.journey-wall-trail{position:fixed;z-index:0;pointer-events:none;inset:auto -15% 18% -15%;height:90px;transform:rotate(-6deg);opacity:.4}
+.journey-wall-trail:before,.journey-wall-trail:after{content:"";position:absolute;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,rgba(58,122,31,.16),rgba(244,119,24,.11),transparent)}
+.journey-wall-trail:before{top:28px}.journey-wall-trail:after{top:48px}.journey-wall-trail span{position:absolute;top:25px;width:7px;height:7px;border-radius:50%;background:#3a7a1f;animation:lm-travel 8s ease-in-out infinite}.journey-wall-trail span:nth-child(1){left:25%}.journey-wall-trail span:nth-child(2){left:68%;top:45px;background:#f47718;animation-direction:reverse}
+
+.journey-cheer-card{position:relative;display:flex;align-items:flex-start;gap:12px;padding:14px 15px;border:1px solid rgba(58,122,31,.12);border-radius:20px;background:rgba(255,255,255,.82);box-shadow:0 12px 34px rgba(31,77,32,.055);overflow:hidden}
+.journey-cheer-card:after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;right:-45px;top:-48px;background:radial-gradient(circle,rgba(105,168,79,.15),transparent 68%)}
+.journey-cheer-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:0 0 34px;border-radius:12px;background:#edf6e7;color:#2f7d20;animation:lm-breathe 4.5s ease-in-out infinite}.journey-cheer-title{font-size:13px;font-weight:750;color:#2f5f21}.journey-cheer-copy{margin-top:3px;font-size:12px;line-height:1.55;color:rgba(26,26,26,.53)}
+.journey-safety-line{display:flex;align-items:center;gap:8px;padding:0 4px;color:rgba(47,95,33,.7);font-size:11px;line-height:1.4}.journey-safety-line svg{flex:0 0 auto;color:#3a7a1f}
+.journey-question-room{position:relative;border:1px solid rgba(58,122,31,.09);border-radius:24px;background:rgba(255,255,255,.88);padding:18px;box-shadow:0 14px 42px rgba(24,66,29,.055);backdrop-filter:blur(4px)}
+.journey-question-room:before{content:"";position:absolute;left:18px;top:0;width:48px;height:3px;border-radius:0 0 99px 99px;background:linear-gradient(90deg,#3a7a1f,#89b971,#f47718)}
+.journey-question-title h1{letter-spacing:-.015em}.journey-primary-action{box-shadow:0 9px 22px rgba(58,122,31,.19)}.journey-primary-action:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(58,122,31,.24)}
+.journey-bottom-action{box-shadow:0 -10px 28px rgba(25,62,28,.045)}
+
+.journey-gallery-room:before,.journey-workspace-room:before,.journey-operational-room:before{content:"";position:fixed;z-index:0;right:-120px;top:120px;width:360px;height:360px;border-radius:50%;border:2px solid rgba(58,122,31,.045);pointer-events:none}
+.journey-gallery-room>* ,.journey-workspace-room>* ,.journey-operational-room>*{position:relative;z-index:1}
+.journey-gallery-affirmation,.journey-room-affirmation{border:1px solid rgba(58,122,31,.12);border-radius:17px;background:rgba(244,248,239,.78);padding:11px 13px;color:#315f1c;font-size:12px;line-height:1.55;box-shadow:0 10px 28px rgba(31,77,32,.035)}
+.journey-room-affirmation strong{font-weight:750}
+
+@keyframes lm-travel{0%,100%{transform:translateX(-14px);opacity:.35}50%{transform:translateX(28px);opacity:.85}}
+@keyframes lm-wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg) scale(1.03)}60%{transform:rotate(4deg) scale(1.03)}}
+@keyframes lm-spark{0%{opacity:0;transform:scale(.3)}45%{opacity:1;transform:scale(1.6)}100%{opacity:0;transform:scale(.4)}}
+@keyframes lm-breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes lm-complete{0%{transform:scale(1)}45%{transform:scale(1.09) rotate(-2deg)}100%{transform:scale(1)}}
+@keyframes lm-pulse{0%{box-shadow:0 0 0 0 rgba(244,119,24,.25)}65%{box-shadow:0 0 0 7px rgba(244,119,24,0)}100%{box-shadow:0 0 0 0 rgba(244,119,24,0)}}
+
+@media(max-width:640px){
+  .lm-ambient-mark-a{width:330px;height:330px;right:-210px}.lm-thread{top:210px}.lm-reassurance{padding:12px 13px}.lm-story-icon{width:44px;height:44px;flex-basis:44px;border-radius:15px}.lm-market-card{min-height:82px}.lm-card-tail{gap:6px}.lm-attention-bead{width:6px;height:6px}
+  .journey-wall-mark-a{width:290px;height:290px;right:-205px;top:90px}.journey-wall-mark-b{display:none}.journey-cheer-card{padding:12px 13px;border-radius:18px}.journey-cheer-copy{font-size:11.5px}.journey-question-room{padding:16px 14px;border-radius:20px}.journey-safety-line{font-size:10.5px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .lm-thread span,.lm-story-icon,.lm-story-spark,.lm-attention-bead,.lm-live-dot span,.journey-wall-trail span,.journey-cheer-icon{animation:none!important}.lm-market-card,.journey-primary-action{transition:none!important}.lm-market-card:hover,.journey-primary-action:hover{transform:none!important}
+}
+
+/* SecurePay mark as the Market's quiet guide light — never a literal lighthouse. */
+.journey-guidelight{position:fixed;z-index:0;pointer-events:none;opacity:.28;filter:saturate(.85)}
+.journey-guidelight-a{right:7vw;top:26vh}.journey-guidelight-b{left:8vw;bottom:14vh;opacity:.20}
+.journey-guidelight .sp-living-mark__halo{box-shadow:0 0 28px rgba(96,170,72,.20)}
+@media(max-width:700px){.journey-guidelight-a{right:-7px;top:24vh;opacity:.18}.journey-guidelight-b{display:none}}

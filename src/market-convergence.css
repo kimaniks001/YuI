@@ -1,0 +1,29 @@
+/* R14.5 — converge the existing authoritative agreement workspace into the Market shell.
+   This stylesheet changes presentation only. It does not alter agreement, funding,
+   Payment Ready, release, settlement, governance or SecureFlow authority. */
+
+.sp-market-agreement-workspace > div > nav {
+  display: none;
+}
+
+.sp-market-agreement-workspace > div {
+  min-height: 0 !important;
+  background: transparent !important;
+}
+
+.sp-market-agreement-workspace > div > .max-w-4xl {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0.25rem !important;
+}
+
+.sp-market-agreement-workspace .sp-market-flow-anchor {
+  scroll-margin-top: 7rem;
+}
+
+@media (max-width: 640px) {
+  .sp-market-agreement-workspace > div > .max-w-4xl {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}

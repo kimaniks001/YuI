@@ -1,0 +1,65 @@
+/* R14 accessibility and responsive hardening. */
+
+.sp-skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 1000;
+  transform: translateY(-180%);
+  border-radius: 999px;
+  background: #173b20;
+  color: #fff;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  transition: transform 120ms ease;
+}
+
+.sp-skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid rgba(232, 124, 30, 0.75);
+  outline-offset: 2px;
+}
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid #3a7a1f;
+  outline-offset: 3px;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+pre,
+code {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

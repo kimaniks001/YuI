@@ -1,0 +1,45 @@
+/* SecurePay Visual Constitution v1 — executable design tokens.
+   The Market leads. SecurePay supports. */
+:root {
+  --sp-green: #1f7a22;
+  --sp-green-dark: #0f4f22;
+  --sp-green-soft: #eaf5e7;
+  --sp-orange: #ee7d1a;
+  --sp-orange-dark: #c9570b;
+  --sp-orange-soft: #fff3e8;
+  --sp-cream: #fffdf8;
+  --sp-surface: #ffffff;
+  --sp-ink: #171717;
+  --sp-muted: #696969;
+  --sp-line: #e7e2d8;
+  --sp-success: #2f7d20;
+  --sp-caution: #d8620b;
+  --sp-focus-ring: 0 0 0 3px rgba(31, 122, 34, .24);
+  --sp-shadow-soft: 0 10px 32px rgba(35, 76, 30, .07);
+  --sp-radius-sm: 10px;
+  --sp-radius-md: 14px;
+  --sp-radius-lg: 18px;
+  --sp-motion-fast: 180ms;
+  --sp-motion-state: 420ms;
+  --sp-motion-calm: 3600ms;
+  --sp-touch-min: 44px;
+}
+
+/* Status colours belong to state communication, never to decoration alone. */
+[data-sp-status='success'],
+[data-sp-status='complete'] { --sp-status-accent: var(--sp-success); }
+[data-sp-status='caution'],
+[data-sp-status='review'] { --sp-status-accent: var(--sp-caution); }
+[data-sp-status='waiting'],
+[data-sp-status='guiding'],
+[data-sp-status='listening'] { --sp-status-accent: var(--sp-green); }
+
+:focus-visible { scroll-margin: 96px; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sp-motion-fast: 1ms;
+    --sp-motion-state: 1ms;
+    --sp-motion-calm: 1ms;
+  }
+}

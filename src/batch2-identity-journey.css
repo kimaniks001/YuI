@@ -1,0 +1,46 @@
+/* Batch 02 — V2 Identity Doorway + V3 Agreement Creation visual lock.
+   The Market welcomes; SecurePay guides. Identity is serious without feeling bureaucratic. */
+.identity-doorway{position:relative;overflow:hidden;background:
+  radial-gradient(circle at 15% 18%,rgba(75,143,51,.075),transparent 28%),
+  radial-gradient(circle at 86% 75%,rgba(238,125,26,.045),transparent 24%),
+  var(--sp-cream,#fffdf8)}
+.identity-doorway__glow{position:fixed;pointer-events:none;border-radius:50%;border:1px solid rgba(31,122,34,.055);z-index:0}
+.identity-doorway__glow:after{content:"";position:absolute;inset:18%;border-radius:50%;border:1px solid rgba(31,122,34,.035)}
+.identity-doorway__glow--a{width:420px;height:420px;right:-210px;top:120px}.identity-doorway__glow--b{width:280px;height:280px;left:-170px;bottom:40px}
+.identity-doorway__header{position:relative;z-index:5;background:rgba(255,253,248,.88);backdrop-filter:blur(14px)}
+.identity-doorway__header-note{font-size:11px;color:rgba(23,23,23,.42);font-weight:650;letter-spacing:.01em}
+.identity-doorway__main{position:relative;z-index:1}
+.identity-doorway__layout,.identity-form-wrap{width:min(100%,980px);margin:auto;display:grid;grid-template-columns:minmax(0,.9fr) minmax(340px,.78fr);gap:54px;align-items:center}
+.identity-form-wrap{max-width:980px}
+.identity-doorway__welcome{padding:24px 4px;max-width:430px}
+.identity-doorway__welcome h2{margin-top:14px;font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(2.2rem,4vw,3.35rem);font-weight:600;line-height:.98;letter-spacing:-.025em;color:var(--sp-ink)}
+.identity-doorway__welcome>p:not(.identity-doorway__eyebrow){margin-top:16px;max-width:390px;font-size:14px;line-height:1.75;color:rgba(23,23,23,.54)}
+.identity-doorway__eyebrow,.identity-step-kicker{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.17em;color:var(--sp-green)}
+.identity-doorway__reassurance,.activation-guidance{display:flex;align-items:center;gap:9px;margin-top:22px;border:1px solid rgba(31,122,34,.11);border-radius:15px;background:rgba(255,255,255,.76);padding:10px 12px;font-size:11px;line-height:1.45;color:rgba(37,92,30,.72);box-shadow:0 10px 28px rgba(31,77,32,.035)}
+.identity-doorway__card,.sp-auth-panel{position:relative;border:1px solid rgba(31,122,34,.10)!important;background:rgba(255,255,255,.9)!important;box-shadow:0 20px 58px rgba(29,72,30,.075)!important;backdrop-filter:blur(7px)}
+.identity-doorway__card:before,.sp-auth-panel:before{content:"";position:absolute;left:22px;top:0;width:54px;height:3px;border-radius:0 0 99px 99px;background:linear-gradient(90deg,var(--sp-green),#8fbe77,var(--sp-orange))}
+.identity-review-chip{border:1px solid rgba(31,122,34,.12);border-radius:999px;background:#f2f8ee;padding:6px 9px;font-size:10px;font-weight:750;color:#315f1c}
+.identity-step-intro{display:flex;align-items:center;gap:11px;border-radius:16px;background:#f5f9f1;padding:11px 12px;border:1px solid rgba(31,122,34,.08)}
+.sp-auth-main.identity-doorway__main{max-width:1180px;padding-top:38px}
+.identity-form-wrap .sp-auth-panel{margin:0;max-width:none;width:100%}
+.activation-guidance{margin-top:0;max-width:620px;width:max-content;max-width:100%}
+.activation-caution{align-items:flex-start!important}
+
+/* Stepper is a trail, not an exam score. */
+.identity-doorway .sp-step-dot-done,.identity-doorway .sp-step-dot-current{background:transparent!important;box-shadow:none!important;ring:0!important}
+.identity-doorway .sp-step-dot-current{outline:none!important}
+.identity-doorway .sp-step-dot-done .sp-living-mark,.identity-doorway .sp-step-dot-current .sp-living-mark{transform:scale(.92)}
+
+/* Creation room: a guided conversation, not a questionnaire. */
+.journey-phase-label{display:none;padding:5px 8px;border:1px solid rgba(31,122,34,.09);border-radius:999px;background:rgba(255,255,255,.7);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.11em;color:rgba(47,95,33,.64)}
+.journey-change-note{display:flex;align-items:center;gap:7px;margin:0 0 15px;padding-bottom:11px;border-bottom:1px solid rgba(31,122,34,.065);font-size:10px;line-height:1.4;color:rgba(23,23,23,.38)}
+.journey-question-room[data-journey-state='review']{border-color:rgba(238,125,26,.12);box-shadow:0 15px 44px rgba(57,75,28,.06)}
+.journey-question-room[data-journey-state='caution']{border-color:rgba(216,98,11,.18)}
+.journey-room-header .sp-living-mark--caution{filter:none}
+
+@media(min-width:720px){.journey-phase-label{display:inline-flex}}
+@media(max-width:760px){
+  .identity-doorway__layout,.identity-form-wrap{display:block;width:100%}.identity-doorway__welcome{padding:4px 2px 20px;max-width:520px}.identity-doorway__welcome h2{font-size:2.25rem}.identity-doorway__welcome>p:not(.identity-doorway__eyebrow){font-size:13px;line-height:1.6}.identity-doorway__reassurance{margin-top:14px}.identity-doorway__card{max-width:none!important}.identity-doorway__glow--a{width:280px;height:280px;right:-190px;top:90px}.identity-doorway__glow--b{display:none}.identity-doorway__header-note{display:none}.sp-auth-main.identity-doorway__main{padding-top:22px}.identity-form-wrap .sp-auth-panel{padding-top:22px!important}
+}
+@media(max-width:390px){.identity-doorway__welcome h2{font-size:2rem}.identity-doorway__welcome{padding-bottom:15px}.identity-doorway__reassurance{font-size:10.5px}.journey-change-note{font-size:9.5px;margin-bottom:12px}}
+@media(prefers-reduced-motion:reduce){.identity-doorway *,.journey-question-room{scroll-behavior:auto!important}}
