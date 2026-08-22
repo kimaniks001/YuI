@@ -1,5 +1,6 @@
 import { SECUREPAY_API_BASE_URL, isForbiddenPath, FORBIDDEN_MESSAGE } from './securepayConfig';
 import { SECUREPAY_EXPLORER_MODE } from '../lib/explorerMode';
+import { getCurrentWorld, isSimulatedWorldRuntime } from '../lib/worldMode';
 import type { SecurePayApiError, SecurePayResult } from './securepayTypes';
 
 function mapError(err: SecurePayApiError | null, fallback: string): string {
@@ -33,10 +34,15 @@ export async function securePayFetch<T>(
   path: string,
   options: RequestOptions = {}
 ): Promise<SecurePayResult<T>> {
-  if (SECUREPAY_EXPLORER_MODE) {
+  // Evaluate the world at request time, not module-load time. This matters in
+  // a SPA: a user can move from Market to Trainer/Game without a full reload.
+  // Simulated routes may render convincing agreement and money states, but
+  // they can never call SecurePayAPI and therefore cannot create Market truth.
+  if (SECUREPAY_EXPLORER_MODE || isSimulatedWorldRuntime()) {
+    const world = getCurrentWorld();
     return {
       ok: false,
-      error: 'YUI v1 Explorer is a training environment. Live SecurePay API calls are disabled.',
+      error: `${world === 'game' ? 'SecurePay Game' : 'SecurePay Trainer'} is simulated. Live SecurePay API calls are disabled in this world.`,
     };
   }
 
