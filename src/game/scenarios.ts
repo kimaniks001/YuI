@@ -48,13 +48,20 @@ export const GAME_SCENARIOS: GameScenario[] = [
   },
 ];
 
-export function scenariosForFamily(family?: GameScenario['family']) {
-  return family ? GAME_SCENARIOS.filter(card => card.family === family) : GAME_SCENARIOS;
+export function scenariosForFamily(
+  family?: GameScenario['family'],
+  allowedAgeBands: GameScenario['ageBand'][] = ['GENERAL'],
+) {
+  return GAME_SCENARIOS.filter(card => (!family || card.family === family) && allowedAgeBands.includes(card.ageBand));
 }
 
-export function deterministicScenario(history: string[], family?: GameScenario['family']): GameScenario {
-  const pool = scenariosForFamily(family);
-  if (!pool.length) throw new Error('No Game scenarios are available for that family.');
+export function deterministicScenario(
+  history: string[],
+  family?: GameScenario['family'],
+  allowedAgeBands: GameScenario['ageBand'][] = ['GENERAL'],
+): GameScenario {
+  const pool = scenariosForFamily(family, allowedAgeBands);
+  if (!pool.length) throw new Error('No age-suitable Game scenarios are available for that context.');
   const unseen = pool.filter(card => !history.includes(`${card.id}@${card.version}`));
   return (unseen.length ? unseen : pool)[history.length % (unseen.length || pool.length)];
 }
