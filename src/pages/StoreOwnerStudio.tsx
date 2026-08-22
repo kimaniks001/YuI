@@ -1,19 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import {
-  Activity,
-  AlertTriangle,
-  CheckCircle2,
-  Clock3,
-  Eye,
-  Image,
-  Package,
-  Plus,
-  RefreshCw,
-  Save,
-  Sparkles,
-  Store,
-  Wrench,
+  Activity, AlertTriangle, CheckCircle2, Eye, Image, Package,
+  Plus, RefreshCw, Save, Sparkles, Store, Wrench,
 } from 'lucide-react';
 import TraderShell from '../components/trader/TraderShell';
 import TraderPageHeader from '../components/trader/TraderPageHeader';
@@ -50,15 +39,11 @@ const PRODUCT_STATES: PublicStoreAvailabilityState[] = [
 const SERVICE_STATES: PublicStoreAvailabilityState[] = [
   'TAKING_WORK', 'LIMITED', 'NEEDS_CONFIRMATION', 'FULLY_BOOKED', 'RESTING', 'PAUSED',
 ];
+const RESTING_STATES: PublicStoreAvailabilityState[] = ['RESTING', 'PAUSED', 'UNAVAILABLE', 'FULLY_BOOKED'];
 
 const blankOffer = (): UpsertStoreOfferRequest => ({
-  kind: 'PRODUCT',
-  title: '',
-  description: null,
-  priceMinor: null,
-  quantityAvailable: null,
-  availabilityState: 'AVAILABLE',
-  published: false,
+  kind: 'PRODUCT', title: '', description: null, priceMinor: null,
+  quantityAvailable: null, availabilityState: 'AVAILABLE', published: false,
 });
 
 function daysSince(value: string | null | undefined): number | null {
@@ -70,21 +55,12 @@ function daysSince(value: string | null | undefined): number | null {
 
 function deriveStoreHealth(profile: StoreProfile | null, offers: StoreOffer[]): StoreHealth {
   const published = offers.filter(offer => offer.published);
-  if (published.length > 0 && published.every(offer => ['RESTING', 'PAUSED', 'UNAVAILABLE', 'FULLY_BOOKED'].includes(offer.availabilityState))) {
+  if (published.length > 0 && published.every(offer => RESTING_STATES.includes(offer.availabilityState))) {
     return { label: 'Resting', note: 'Your public offers are intentionally not taking new trade right now.', ageDays: null, tone: 'resting' };
   }
-
-  const ages = [
-    daysSince(profile?.updatedAt),
-    ...published.map(offer => daysSince(offer.availabilityConfirmedAt)),
-  ].filter((age): age is number => age !== null);
-
-  if (!ages.length) {
-    return { label: 'Needs attention', note: 'Confirm your profile and offer availability so visitors know what is current.', ageDays: null, tone: 'attention' };
-  }
-
-  // Health is a transparent maintenance indicator. The oldest public truth is
-  // what matters because one stale published offer can mislead a customer.
+  const ages = [daysSince(profile?.updatedAt), ...published.map(offer => daysSince(offer.availabilityConfirmedAt))]
+    .filter((age): age is number => age !== null);
+  if (!ages.length) return { label: 'Needs attention', note: 'Confirm your profile and offer availability so visitors know what is current.', ageDays: null, tone: 'attention' };
   const oldestAge = Math.max(...ages);
   if (oldestAge <= 7) return { label: 'Current', note: 'Your public Store information has been checked recently.', ageDays: oldestAge, tone: 'good' };
   if (oldestAge <= 21) return { label: 'Check-in due', note: 'A quick Store check-in will keep your public information fresh.', ageDays: oldestAge, tone: 'watch' };
@@ -102,13 +78,9 @@ function formatPriceMinor(value: number | null) {
 
 function toOfferRequest(offer: StoreOffer): UpsertStoreOfferRequest {
   return {
-    kind: offer.kind,
-    title: offer.title,
-    description: offer.description,
-    priceMinor: offer.priceMinor,
-    quantityAvailable: offer.quantityAvailable,
-    availabilityState: offer.availabilityState,
-    published: offer.published,
+    kind: offer.kind, title: offer.title, description: offer.description,
+    priceMinor: offer.priceMinor, quantityAvailable: offer.quantityAvailable,
+    availabilityState: offer.availabilityState, published: offer.published,
   };
 }
 
@@ -119,7 +91,7 @@ function interpretStoreWords(text: string): UpsertStoreOfferRequest | null {
   const kind: PublicStoreOfferKind = /service|repair|install|consult|design|build|paint|plumb|work/.test(lower) ? 'SERVICE' : 'PRODUCT';
   const priceMatch = words.match(/(?:KES|Kshs?|price\s*(?:is|at)?|at)\s*([\d,]+(?:\.\d{1,2})?)/i);
   const qtyMatch = words.match(/(?:qty|quantity|stock|have)\s*(?:of\s*)?(\d+)/i);
-  const priceMinor = priceMatch ? Math.round(Number(priceMatch[1].replace(/,/g, '')) * 100) : null;
+  const parsedPrice = priceMatch ? Math.round(Number(priceMatch[1].replace(/,/g, '')) * 100) : null;
   const title = words
     .replace(/^\s*(?:add|list|offer|sell|provide|i\s+(?:sell|offer|provide))\s+/i, '')
     .replace(/(?:for|at|price\s*(?:is|at)?)\s*(?:KES|Kshs?)?\s*[\d,]+(?:\.\d{1,2})?.*$/i, '')
@@ -129,7 +101,7 @@ function interpretStoreWords(text: string): UpsertStoreOfferRequest | null {
     kind,
     title: title.slice(0, 160),
     description: null,
-    priceMinor: Number.isFinite(priceMinor) ? priceMinor : null,
+    priceMinor: parsedPrice !== null && Number.isFinite(parsedPrice) ? parsedPrice : null,
     quantityAvailable: kind === 'PRODUCT' && qtyMatch ? Number(qtyMatch[1]) : null,
     availabilityState: kind === 'SERVICE' ? 'TAKING_WORK' : 'AVAILABLE',
     published: false,
@@ -154,110 +126,82 @@ export default function StoreOwnerStudio() {
 
   const load = useCallback(async () => {
     if (!session?.accessToken) return;
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     const [profileResult, offersResult] = await Promise.all([
-      getMyStoreProfile(session.accessToken),
-      listMyStoreOffers(session.accessToken),
+      getMyStoreProfile(session.accessToken), listMyStoreOffers(session.accessToken),
     ]);
     if (!profileResult.ok || !profileResult.data) {
-      setError(profileResult.error || 'Your Store profile could not be loaded.');
-      setLoading(false);
-      return;
+      setError(profileResult.error || 'Your Store profile could not be loaded.'); setLoading(false); return;
     }
     if (!offersResult.ok || !offersResult.data) {
-      setError(offersResult.error || 'Your Store offers could not be loaded.');
-      setLoading(false);
-      return;
+      setError(offersResult.error || 'Your Store offers could not be loaded.'); setLoading(false); return;
     }
-    setProfile(profileResult.data);
-    setProfileDraft({
-      tagline: profileResult.data.tagline,
-      about: profileResult.data.about,
-      locationLabel: profileResult.data.locationLabel,
-    });
+    const savedProfile = profileResult.data;
+    setProfile(savedProfile);
+    setProfileDraft({ tagline: savedProfile.tagline, about: savedProfile.about, locationLabel: savedProfile.locationLabel });
     setOffers(offersResult.data);
     setLoading(false);
   }, [session?.accessToken]);
 
   useEffect(() => { void load(); }, [load]);
-
   const health = useMemo(() => deriveStoreHealth(profile, offers), [profile, offers]);
 
   if (!user || !session) return <Navigate to="/signin" replace />;
 
   const saveProfile = async () => {
-    setSavingProfile(true);
-    setNotice(null);
+    setSavingProfile(true); setNotice(null);
     const result = await updateMyStoreProfile(session.accessToken, profileDraft);
     setSavingProfile(false);
-    if (!result.ok || !result.data) {
-      setNotice(result.error || 'Your Store profile was not changed.');
-      return;
-    }
-    setProfile(result.data);
-    setProfileDraft({ tagline: result.data.tagline, about: result.data.about, locationLabel: result.data.locationLabel });
+    if (!result.ok || !result.data) { setNotice(result.error || 'Your Store profile was not changed.'); return; }
+    const saved = result.data;
+    setProfile(saved);
+    setProfileDraft({ tagline: saved.tagline, about: saved.about, locationLabel: saved.locationLabel });
     setNotice('Store profile saved.');
   };
 
   const saveOffer = async () => {
-    if (!offerDraft.title.trim()) {
-      setNotice('Give this product or service a clear name first.');
-      return;
-    }
-    setSavingOffer(true);
-    setNotice(null);
+    if (!offerDraft.title.trim()) { setNotice('Give this product or service a clear name first.'); return; }
+    setSavingOffer(true); setNotice(null);
     const request = { ...offerDraft, title: offerDraft.title.trim(), description: offerDraft.description?.trim() || null };
     const result = editingOfferId
       ? await updateMyStoreOffer(session.accessToken, editingOfferId, request)
       : await createMyStoreOffer(session.accessToken, request);
     setSavingOffer(false);
-    if (!result.ok || !result.data) {
-      setNotice(result.error || 'This Store offer was not saved.');
-      return;
-    }
-    setOffers(current => editingOfferId
-      ? current.map(offer => offer.id === editingOfferId ? result.data! : offer)
-      : [result.data!, ...current]);
-    setEditingOfferId(null);
-    setOfferDraft(blankOffer());
-    setQuickWords('');
-    setNotice('Store offer saved.');
+    if (!result.ok || !result.data) { setNotice(result.error || 'This Store offer was not saved.'); return; }
+    const saved = result.data;
+    setOffers(current => editingOfferId ? current.map(offer => offer.id === editingOfferId ? saved : offer) : [saved, ...current]);
+    setEditingOfferId(null); setOfferDraft(blankOffer()); setQuickWords(''); setNotice('Store offer saved.');
   };
 
   const beginEdit = (offer: StoreOffer) => {
-    setEditingOfferId(offer.id);
-    setOfferDraft(toOfferRequest(offer));
-    setQuickWords('');
+    setEditingOfferId(offer.id); setOfferDraft(toOfferRequest(offer)); setQuickWords('');
     document.getElementById('store-offer-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const interpretWords = () => {
     const interpreted = interpretStoreWords(quickWords);
-    if (!interpreted) {
-      setNotice('I could not turn those words into a Store offer yet. Try: “Add cement at KES 850, stock 20”.');
-      return;
-    }
-    setEditingOfferId(null);
-    setOfferDraft(interpreted);
+    if (!interpreted) { setNotice('I could not turn those words into a Store offer yet. Try: “Add cement at KES 850, stock 20”.'); return; }
+    setEditingOfferId(null); setOfferDraft(interpreted);
     setNotice('I drafted the offer below. Review it before saving — nothing has been published yet.');
+  };
+
+  const confirmOne = async (offer: StoreOffer) => {
+    const result = await confirmMyStoreOfferAvailability(session.accessToken, offer.id);
+    if (!result.ok || !result.data) { setNotice(result.error || 'Availability was not confirmed.'); return; }
+    const saved = result.data;
+    setOffers(current => current.map(item => item.id === offer.id ? saved : item));
+    setNotice(`${offer.title} availability confirmed.`);
   };
 
   const checkIn = async () => {
     const candidates = offers.filter(offer => offer.published);
-    if (!candidates.length) {
-      setNotice('Publish at least one offer before doing a public Store check-in.');
-      return;
-    }
-    setCheckingIn(true);
-    setNotice(null);
+    if (!candidates.length) { setNotice('Publish at least one offer before doing a public Store check-in.'); return; }
+    setCheckingIn(true); setNotice(null);
     const refreshed: StoreOffer[] = [];
     for (const offer of candidates) {
       const result = await confirmMyStoreOfferAvailability(session.accessToken, offer.id);
       if (!result.ok || !result.data) {
-        setCheckingIn(false);
-        setNotice(result.error || `Could not confirm ${offer.title}. Nothing was inferred.`);
-        return;
+        setCheckingIn(false); setNotice(result.error || `Could not confirm ${offer.title}. Nothing was inferred.`); return;
       }
       refreshed.push(result.data);
     }
@@ -283,13 +227,7 @@ export default function StoreOwnerStudio() {
     {!loading && !error && <div className="space-y-6">
       <section className="grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
         <div className={`rounded-[26px] border p-5 shadow-sm ${health.tone === 'attention' ? 'border-amber-200 bg-amber-50' : health.tone === 'watch' ? 'border-orange-200 bg-orange-50' : health.tone === 'resting' ? 'border-ink/10 bg-[#f5f1e8]' : 'border-green-200 bg-green-50'}`}>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink/45">Store Health · maintenance only</p>
-              <h2 className="mt-2 font-display text-3xl">{health.label}</h2>
-            </div>
-            <span className="flex size-11 items-center justify-center rounded-2xl bg-white/70 text-green-800"><Activity size={21} /></span>
-          </div>
+          <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink/45">Store Health · maintenance only</p><h2 className="mt-2 font-display text-3xl">{health.label}</h2></div><span className="flex size-11 items-center justify-center rounded-2xl bg-white/70 text-green-800"><Activity size={21} /></span></div>
           <p className="mt-3 text-sm leading-6 text-ink/60">{health.note}</p>
           {health.ageDays !== null && <p className="mt-2 text-xs text-ink/45">Oldest public information checked {health.ageDays === 0 ? 'today' : `${health.ageDays} day${health.ageDays === 1 ? '' : 's'} ago`}.</p>}
           <p className="mt-4 rounded-xl bg-white/65 p-3 text-xs leading-5 text-ink/55">Store Health measures freshness only. It is not a trust, credit, reputation, financial-strength or trader-ranking score.</p>
@@ -299,9 +237,7 @@ export default function StoreOwnerStudio() {
         <div className="rounded-[26px] border border-ink/8 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-green-700">Store personality</p><h2 className="mt-1 font-display text-2xl">Make maintenance feel like your space.</h2></div><Sparkles size={20} className="text-orange-600" /></div>
           <p className="mt-2 text-sm leading-6 text-ink/55">The atmosphere below is a device-local Studio preview only. SecurePayAPI does not yet persist a public Store theme, so customers are not told this mood is part of your Store.</p>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {themes.map(item => <button key={item.id} type="button" aria-pressed={theme === item.id} onClick={() => setTheme(item.id)} className={`min-h-16 rounded-2xl border p-3 text-left ${theme === item.id ? 'border-green-700 bg-green-50' : 'border-ink/10 bg-[#faf9f5]'}`}><strong className="block text-sm">{item.name}</strong><span className="mt-1 block text-xs text-ink/48">{item.atmosphere}</span></button>)}
-          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">{themes.map(item => <button key={item.id} type="button" aria-pressed={theme === item.id} onClick={() => setTheme(item.id)} className={`min-h-16 rounded-2xl border p-3 text-left ${theme === item.id ? 'border-green-700 bg-green-50' : 'border-ink/10 bg-[#faf9f5]'}`}><strong className="block text-sm">{item.name}</strong><span className="mt-1 block text-xs text-ink/48">{item.atmosphere}</span></button>)}</div>
         </div>
       </section>
 
@@ -316,10 +252,7 @@ export default function StoreOwnerStudio() {
       </section>
 
       <section id="store-offer-editor" className="scroll-mt-24 rounded-[28px] border border-ink/8 bg-white p-5 shadow-sm sm:p-7">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-orange-600">Natural-language quick add</p><h2 className="mt-1 font-display text-2xl">Tell your Store what changed.</h2><p className="mt-1 text-sm text-ink/52">SecurePay drafts the fields; you review and save them yourself.</p></div>
-          {editingOfferId && <button type="button" onClick={() => { setEditingOfferId(null); setOfferDraft(blankOffer()); }} className="text-sm font-semibold text-green-700">Cancel edit</button>}
-        </div>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-orange-600">Natural-language quick add</p><h2 className="mt-1 font-display text-2xl">Tell your Store what changed.</h2><p className="mt-1 text-sm text-ink/52">SecurePay drafts the fields; you review and save them yourself.</p></div>{editingOfferId && <button type="button" onClick={() => { setEditingOfferId(null); setOfferDraft(blankOffer()); }} className="text-sm font-semibold text-green-700">Cancel edit</button>}</div>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row"><input value={quickWords} onChange={event => setQuickWords(event.target.value)} placeholder="Try: Add cement at KES 850, stock 20" className="min-h-12 flex-1 rounded-xl border border-ink/15 px-4 text-sm" /><button type="button" onClick={interpretWords} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#173b20] px-5 text-sm font-semibold text-white"><Sparkles size={16} /> Draft it</button></div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -338,7 +271,7 @@ export default function StoreOwnerStudio() {
         <div className="flex items-center justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-green-700">Your display</p><h2 className="mt-1 font-display text-2xl">Products & services</h2></div><span className="text-xs text-ink/45">{offers.length} saved</span></div>
         {offers.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed border-ink/15 p-6 text-center"><Package size={22} className="mx-auto text-green-700/50" /><p className="mt-2 text-sm text-ink/55">Nothing saved yet. Add your first product or service above.</p></div> : <div className="mt-5 grid gap-3 md:grid-cols-2">{offers.map(offer => {
           const Icon = offer.kind === 'PRODUCT' ? Package : Wrench;
-          return <article key={offer.id} className="rounded-2xl border border-ink/8 bg-[#faf9f5] p-4"><div className="flex items-start justify-between gap-3"><span className="flex size-9 items-center justify-center rounded-xl bg-white text-green-700"><Icon size={17} /></span><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${offer.published ? 'bg-green-100 text-green-800' : 'bg-ink/8 text-ink/50'}`}>{offer.published ? 'PUBLIC' : 'PRIVATE'}</span></div><h3 className="mt-3 font-semibold">{offer.title}</h3><p className="mt-1 text-sm text-ink/55">{formatPriceMinor(offer.priceMinor)} · {displayState(offer.availabilityState)}</p><p className="mt-2 text-xs text-ink/42">Availability last confirmed {daysSince(offer.availabilityConfirmedAt) ?? '—'} day(s) ago.</p><div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => beginEdit(offer)} className="min-h-10 rounded-full border border-ink/12 bg-white px-4 text-xs font-semibold">Edit</button><button type="button" onClick={async () => { const result = await confirmMyStoreOfferAvailability(session.accessToken, offer.id); if (result.ok && result.data) { setOffers(current => current.map(item => item.id === offer.id ? result.data! : item)); setNotice(`${offer.title} availability confirmed.`); } else setNotice(result.error || 'Availability was not confirmed.'); }} className="min-h-10 rounded-full border border-green-200 bg-green-50 px-4 text-xs font-semibold text-green-800">Confirm availability</button></div></article>;
+          return <article key={offer.id} className="rounded-2xl border border-ink/8 bg-[#faf9f5] p-4"><div className="flex items-start justify-between gap-3"><span className="flex size-9 items-center justify-center rounded-xl bg-white text-green-700"><Icon size={17} /></span><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${offer.published ? 'bg-green-100 text-green-800' : 'bg-ink/8 text-ink/50'}`}>{offer.published ? 'PUBLIC' : 'PRIVATE'}</span></div><h3 className="mt-3 font-semibold">{offer.title}</h3><p className="mt-1 text-sm text-ink/55">{formatPriceMinor(offer.priceMinor)} · {displayState(offer.availabilityState)}</p><p className="mt-2 text-xs text-ink/42">Availability last confirmed {daysSince(offer.availabilityConfirmedAt) ?? '—'} day(s) ago.</p><div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => beginEdit(offer)} className="min-h-10 rounded-full border border-ink/12 bg-white px-4 text-xs font-semibold">Edit</button><button type="button" onClick={() => void confirmOne(offer)} className="min-h-10 rounded-full border border-green-200 bg-green-50 px-4 text-xs font-semibold text-green-800">Confirm availability</button></div></article>;
         })}</div>}
       </section>
 
