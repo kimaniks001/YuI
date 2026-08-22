@@ -2,7 +2,6 @@ import { BookOpen, Gamepad2, Globe2, ShieldCheck } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   getWorldFromPath,
-  marketSignInHref,
   saveMarketDraftIntent,
   type SecurePayWorld,
 } from '../lib/worldMode';
@@ -22,7 +21,7 @@ export default function WorldSwitcher() {
   const goReal = () => {
     if (!simulated) return;
     saveMarketDraftIntent(world, `${location.pathname}${location.search}`, '/create');
-    navigate(marketSignInHref('/create'));
+    navigate('/market/continue');
   };
 
   return (
@@ -48,6 +47,11 @@ export default function WorldSwitcher() {
         <button type="button" className="sp-world-switcher__real" onClick={goReal}>
           Do this for real
         </button>
+      )}
+      {world === 'market' && (
+        <Link to="/market/safety" className="sp-world-switcher__real">
+          World safety
+        </Link>
       )}
     </div>
   );
