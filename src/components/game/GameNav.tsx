@@ -19,7 +19,7 @@ export default function GameNav() {
     </section>
     <nav className="mx-auto mb-6 flex max-w-6xl gap-2 overflow-x-auto pb-1" aria-label="Market Game">
       {items.map(({ to, label, icon: Icon }) => {
-        const active = location.pathname === to;
+        const active = location.pathname === to || (to === '/game/profile' && location.pathname === '/game');
         return <Link key={to} to={to} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold ${active ? 'border-amber-700 bg-amber-700 text-white' : 'border-ink/10 bg-white text-ink/60 hover:border-amber-700/30'}`}>
           <Icon size={15} aria-hidden="true" /> {label}
         </Link>;
