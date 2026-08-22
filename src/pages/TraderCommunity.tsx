@@ -112,6 +112,7 @@ function CommunityHome({ circle }: { circle: CircleProfileResponse }) {
         <div className="mt-4 flex flex-wrap gap-4">
           <Link to={`/ks/${encodeURIComponent(circle.canonicalKsNumber)}`} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-green-700">Open your KS Store <ArrowRight size={15} /></Link>
           <Link to="/referrals" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-green-700">See referral provenance <ArrowRight size={15} /></Link>
+          <Link to="/circles" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-green-700">Grow with a Circle <ArrowRight size={15} /></Link>
         </div>
       </div>
 

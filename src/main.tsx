@@ -28,6 +28,7 @@ import TraderAgreements from './pages/TraderAgreements';
 import TraderActionCentre from './pages/TraderActionCentre';
 import MoneySpace from './pages/MoneySpace';
 import TraderCommunity from './pages/TraderCommunity';
+import TraderCircles, { TraderCircleDetail } from './pages/TraderCircles';
 import TraderSettings from './pages/TraderSettings';
 import StoreOwnerStudio from './pages/StoreOwnerStudio';
 import StoreSharingStudio from './pages/StoreSharingStudio';
@@ -138,6 +139,8 @@ function AppShell() {
       <Route path="/money" element={<Protected><MoneySpace /></Protected>} />
       <Route path="/community" element={<Protected><TraderCommunity /></Protected>} />
       <Route path="/referrals" element={<Protected><TraderCommunity /></Protected>} />
+      <Route path="/circles" element={<Protected><TraderCircles /></Protected>} />
+      <Route path="/circles/:circleId" element={<Protected><TraderCircleDetail /></Protected>} />
       <Route path="/settings" element={<Protected><TraderSettings /></Protected>} />
       <Route path="/developers" element={<Protected><DeveloperJourney /></Protected>} />
 
