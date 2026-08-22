@@ -11,7 +11,8 @@ This directory is the YUI-native programme documentation introduced by MW-00.
 5. [`GAP_REGISTER.md`](GAP_REGISTER.md) — fail-closed gaps and owning phases.
 6. [`DEPENDENCY_GRAPH.md`](DEPENDENCY_GRAPH.md) — programme sequencing and phase gates.
 7. [`SECUREPAY_YUI_MARKET_TRAINER_GAME_MASTER_ROADMAP_v2.0.md`](SECUREPAY_YUI_MARKET_TRAINER_GAME_MASTER_ROADMAP_v2.0.md) — replacement 20-phase roadmap.
-8. [`MW_00_COMPLETION_REPORT.md`](MW_00_COMPLETION_REPORT.md) — phase evidence and closure status.
+8. [`PLUG_RETENTION_AND_GAME_CYCLE_DOCTRINE.md`](PLUG_RETENTION_AND_GAME_CYCLE_DOCTRINE.md) — locked month-10 Plug reward rule and Turn → Round → Cycle Game grammar.
+9. Phase completion reports (`MW_00_COMPLETION_REPORT.md` onward) — phase evidence, retained gaps and closure status.
 
 ## Supersession rule
 
@@ -19,6 +20,6 @@ Historical YUI batch/review documents remain useful evidence of how the accepted
 
 `kimaniks001/UIyamwisho` is historical/reference material only. Do not continue runtime Market World implementation there.
 
-## Next phase
+## Phase progression
 
-MW-01 — Mode, Identity & Safe World Switching — begins only after MW-00 is reviewed and closed.
+Every phase follows the roadmap dependency graph. A dependent phase starts only after its required predecessor has passed its authority/negative-path checks, certification and merge gate. A missing backend authority remains a fail-closed blocker rather than a frontend approximation.
