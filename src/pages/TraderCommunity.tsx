@@ -119,8 +119,8 @@ function CommunityHome({ circle }: { circle: CircleProfileResponse }) {
       <div className="rounded-2xl border border-ink/8 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex items-center gap-2 text-green-700"><Crown size={18} /><span className="text-xs font-bold uppercase tracking-[0.16em]">Masters</span></div>
         <h2 className="mt-2 font-display text-xl">Find experience without inventing authority.</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/55">Community will become one route into category-specific Master discovery. Real Market Master status, evidence and rates are not yet authoritative, so no trader is labelled a Master here today.</p>
-        <p className="mt-4 text-xs font-semibold text-ink/40">Master registry and evidence authority are scheduled for MW-10.</p>
+        <p className="mt-2 text-sm leading-6 text-ink/55">Community is one route into category-specific Master discovery. Master status is real backend authority now: category-specific, evidence-gated, and never a platform-wide role or a hidden score.</p>
+        <Link to="/masters" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-green-700">Browse Masters <ArrowRight size={15} /></Link>
       </div>
     </section>
 

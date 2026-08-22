@@ -11,7 +11,7 @@ const required = [
   'A lively feed must still be privacy-safe',
   'Rules and moderators must be real',
   'Public because you chose to publish it',
-  'Master registry and evidence authority are scheduled for MW-10',
+  'Master status is real backend authority now',
 ];
 
 for (const phrase of required) {
