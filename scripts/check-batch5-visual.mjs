@@ -33,7 +33,9 @@ expect(store, "navigate('/preview/create'", 'Digital Store no longer continues i
 expect(store, 'Public view', 'Digital Store public view is missing');
 expect(store, 'Owner view', 'Digital Store owner view is missing');
 expect(store, 'does not create Digital Store inventory in the backend', 'Owner preview safety wording is missing');
-expect(profile, 'current public KS lookup does not return a Digital Store contract', 'Canonical KS Profile is no longer honest about missing store authority');
+expect(profile, 'KS Store · Real Market', 'Canonical KS Profile is not presenting the authoritative Store surface');
+expect(profile, 'Only offers this Store explicitly published are shown.', 'Canonical KS Store lost published-only truth wording');
+expect(profile, 'Listed ≠ reserved ≠ sold.', 'Canonical KS Store lost listing/reservation/sale boundary');
 expect(css, '.b5-door-grid', 'V4 doorway visual grid is missing');
 expect(css, '.b5-offer-grid', 'V11 offer grid is missing');
 expect(css, '@media(max-width:600px)', 'Batch 05 mobile treatment is missing');
