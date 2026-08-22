@@ -32,6 +32,7 @@
 | MW00-G25 | Historical YUI batch/review documentation may look current without reset context | Accepted baseline contains pre-reset batch reports and Explorer language | Future contributors may mistake historical implementation notes for roadmap authority | MW-00 constitution/roadmap supersession note |
 | MW00-G26 | UIyamwisho may still contain useful but non-canonical work | Historical repo exists | Copying its shell/architecture could recreate competing frontend truth | Requirements/tests may be mined only, phase by phase |
 | MW00-G27 | Production-readiness code does not equal live production rails | SecurePayAPI R9 explicitly separates development readiness from deployment/live status | UI must not display “live” from code-readiness alone | Cross-cutting; certify in MW-19 |
+| MW07-G01 | Community UI rooms exist but authoritative membership/moderation/feed contracts are absent | MW-07 reinspection confirms only the self-scoped `/api/v1/circle/me` relationship projection is available to YUI | UI could fabricate belonging, endorsement, moderator authority or leak private trade into a feed | MW-07 backend bridge before phase exit |
 
 ## Register discipline
 
