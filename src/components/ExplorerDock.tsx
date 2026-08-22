@@ -12,6 +12,7 @@ import {
   Menu,
   MessageCircle,
   Network,
+  PlayCircle,
   Settings,
   ShoppingBag,
   Sparkles,
@@ -26,6 +27,8 @@ const groups = [
   {
     label: 'Learn the Market',
     items: [
+      { to: '/trainer', label: 'Trainer home', icon: GraduationCap },
+      { to: '/trainer/session', label: 'Guided Plug session', icon: PlayCircle },
       { to: '/trainer/home', label: 'Market entrance demo', icon: Home },
       { to: '/trainer/create', label: 'Start an agreement demo', icon: Sparkles },
       { to: '/trainer/signin', label: 'Sign-in demo', icon: UserPlus },
@@ -57,7 +60,7 @@ const groups = [
       { to: '/trainer/developers', label: 'Developer demo', icon: Code2 },
       { to: '/trainer/help', label: 'Help & knowledge', icon: BookOpen },
       { to: '/trainer/settings', label: 'Trainer settings', icon: Settings },
-      { to: '/trainer', label: 'All Trainer rooms', icon: GraduationCap },
+      { to: '/trainer/map', label: 'All demo rooms', icon: LayoutGrid },
     ],
   },
 ];
@@ -121,7 +124,7 @@ export default function ExplorerDock() {
         </div>
 
         <div className="yui-explorer-foot">
-          <Link to="/trainer">Open Trainer map <ArrowRight size={14} /></Link>
+          <Link to="/trainer/map">Open all demo rooms <ArrowRight size={14} /></Link>
           <span>Trainer screens can look realistic, but they never create Market identity, agreement, payment, Payment Ready, release or settlement truth.</span>
         </div>
       </aside>
