@@ -15,6 +15,7 @@ import SignIn from './pages/SignIn';
 import Signup from './pages/Signup';
 import KSActivation from './pages/KSActivation';
 import KSProfile from './pages/KSProfile';
+import StoreOfferDetail from './pages/StoreOfferDetail';
 import SecureLinkJoin from './pages/SecureLinkJoin';
 import CreateJourney from './pages/CreateJourney';
 import AgreementDetailWorkspace from './pages/AgreementDetailWorkspace';
@@ -90,6 +91,7 @@ import './batch11-atmosphere-certification.css';
 import './yui-v1-explorer.css';
 import './play-market.css';
 import './world-switcher.css';
+import './store-sharing.css';
 
 function Protected({ children }: { children: ReactNode }) {
   return <RequireAuth>{children}</RequireAuth>;
@@ -113,6 +115,7 @@ function AppShell() {
       <Route path="/activation" element={<KSActivation />} />
       <Route path="/verify" element={<KSActivation />} />
       <Route path="/ks/:ksId" element={<KSProfile />} />
+      <Route path="/ks/:ksId/offers/:offerId" element={<StoreOfferDetail />} />
       <Route path="/create" element={<CreateJourney />} />
       <Route path="/create/journey" element={<CreateJourney />} />
       <Route path="/securelink/join" element={<SecureLinkJoin />} />
