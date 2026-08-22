@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   BookOpenCheck,
-  BriefcaseBusiness,
   Code2,
   FileCheck2,
   GraduationCap,
@@ -29,7 +28,7 @@ const roles: Array<{
   icon: typeof GraduationCap;
 }> = [
   { id: 'plug', title: 'Plug / Trainer', description: 'Teach a trader, show the flow, then help them enter the real Market safely.', icon: GraduationCap },
-  { id: 'trader', title: 'Trader', description: 'Learn how a buyer, seller or service provider moves from intention to agreement.', icon: BriefcaseBusiness },
+  { id: 'trader', title: 'Trader', description: 'Learn how a buyer, seller or service provider moves from intention to agreement.', icon: ShoppingBag },
   { id: 'staff', title: 'SecurePay staff', description: 'Practise explaining states, boundaries and next actions in human language.', icon: ShieldCheck },
   { id: 'developer', title: 'Developer', description: 'Understand the customer journey before wiring the SecurePay engine underneath.', icon: Code2 },
   { id: 'partner', title: 'Partner', description: 'See how identity, agreements and payment authority stay separate.', icon: Handshake },
