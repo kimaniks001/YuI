@@ -1,0 +1,10 @@
+.sp-local-qr{display:block;max-width:100%;height:auto;background:#fff}
+.store-share-print{display:none}
+@media print{
+  body{background:#fff!important}
+  .sp-offer-no-print,.world-switcher,.sp-world-switcher,.sp-floating-assistant{display:none!important}
+  .sp-offer-share-page{min-height:0!important;background:#fff!important;padding:0!important}
+  .sp-offer-share-page main{padding:0!important}
+  .store-share-print{display:block!important;margin:0!important;border:0!important;box-shadow:none!important;break-inside:avoid}
+  .store-share-print .sp-local-qr{width:72mm!important;height:72mm!important}
+}

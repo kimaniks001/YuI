@@ -15,6 +15,7 @@ import SignIn from './pages/SignIn';
 import Signup from './pages/Signup';
 import KSActivation from './pages/KSActivation';
 import KSProfile from './pages/KSProfile';
+import StoreOfferDetail from './pages/StoreOfferDetail';
 import SecureLinkJoin from './pages/SecureLinkJoin';
 import CreateJourney from './pages/CreateJourney';
 import AgreementDetailWorkspace from './pages/AgreementDetailWorkspace';
@@ -29,6 +30,7 @@ import MoneySpace from './pages/MoneySpace';
 import TraderCommunity from './pages/TraderCommunity';
 import TraderSettings from './pages/TraderSettings';
 import StoreOwnerStudio from './pages/StoreOwnerStudio';
+import StoreSharingStudio from './pages/StoreSharingStudio';
 import DeveloperJourney from './pages/DeveloperJourney';
 import SituationsPage from './pages/SituationsPage';
 import HelpCenter from './pages/HelpCenter';
@@ -90,6 +92,7 @@ import './batch11-atmosphere-certification.css';
 import './yui-v1-explorer.css';
 import './play-market.css';
 import './world-switcher.css';
+import './store-sharing.css';
 
 function Protected({ children }: { children: ReactNode }) {
   return <RequireAuth>{children}</RequireAuth>;
@@ -113,6 +116,7 @@ function AppShell() {
       <Route path="/activation" element={<KSActivation />} />
       <Route path="/verify" element={<KSActivation />} />
       <Route path="/ks/:ksId" element={<KSProfile />} />
+      <Route path="/ks/:ksId/offers/:offerId" element={<StoreOfferDetail />} />
       <Route path="/create" element={<CreateJourney />} />
       <Route path="/create/journey" element={<CreateJourney />} />
       <Route path="/securelink/join" element={<SecureLinkJoin />} />
@@ -124,6 +128,7 @@ function AppShell() {
       <Route path="/market/flows" element={<Protected><MarketFlows /></Protected>} />
       <Route path="/market/statements" element={<Protected><MarketStatements /></Protected>} />
       <Route path="/store" element={<Protected><StoreOwnerStudio /></Protected>} />
+      <Route path="/store/share" element={<Protected><StoreSharingStudio /></Protected>} />
       <Route path="/agreements" element={<Protected><TraderAgreements /></Protected>} />
       <Route path="/agreements/:agreementId" element={<Protected><AgreementDetailWorkspace /></Protected>} />
       <Route path="/actions" element={<Protected><TraderActionCentre /></Protected>} />
