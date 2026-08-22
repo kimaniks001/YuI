@@ -30,6 +30,7 @@ import MoneySpace from './pages/MoneySpace';
 import TraderCommunity from './pages/TraderCommunity';
 import TraderSettings from './pages/TraderSettings';
 import StoreOwnerStudio from './pages/StoreOwnerStudio';
+import StoreSharingStudio from './pages/StoreSharingStudio';
 import DeveloperJourney from './pages/DeveloperJourney';
 import SituationsPage from './pages/SituationsPage';
 import HelpCenter from './pages/HelpCenter';
@@ -127,6 +128,7 @@ function AppShell() {
       <Route path="/market/flows" element={<Protected><MarketFlows /></Protected>} />
       <Route path="/market/statements" element={<Protected><MarketStatements /></Protected>} />
       <Route path="/store" element={<Protected><StoreOwnerStudio /></Protected>} />
+      <Route path="/store/share" element={<Protected><StoreSharingStudio /></Protected>} />
       <Route path="/agreements" element={<Protected><TraderAgreements /></Protected>} />
       <Route path="/agreements/:agreementId" element={<Protected><AgreementDetailWorkspace /></Protected>} />
       <Route path="/actions" element={<Protected><TraderActionCentre /></Protected>} />
