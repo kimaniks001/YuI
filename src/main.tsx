@@ -57,6 +57,12 @@ import PlayMarketHome from './pages/PlayMarketHome';
 import PlayMarketBoard from './pages/PlayMarketBoard';
 import PlayMarketProject from './pages/PlayMarketProject';
 import PlayMarketLeaderboard from './pages/PlayMarketLeaderboard';
+import GameCyclePage from './pages/GameCyclePage';
+import GameCardsPage from './pages/GameCardsPage';
+import GameJourneysPage from './pages/GameJourneysPage';
+import GameRoomsPage from './pages/GameRoomsPage';
+import GameMissionsPage from './pages/GameMissionsPage';
+import GameAchievementsPage from './pages/GameAchievementsPage';
 
 // Fixture-backed experience surfaces. Trainer routes reuse these approved
 // visual rooms without giving them authentication or live API authority.
@@ -203,9 +209,15 @@ function AppShell() {
       <Route path="/explore/themes" element={<Navigate to="/trainer/themes" replace />} />
       <Route path="/explore/certification" element={<Navigate to="/trainer/certification" replace />} />
 
-      {/* GAME. This is still the accepted Play-the-Market prototype. MW-13+
-          will replace its local authority with the formal Game domain. */}
+      {/* GAME. The new MW-13–18 surfaces use isolated Game authority. The
+          accepted Play-the-Market prototype remains available as a project board. */}
       <Route path="/game" element={<PlayMarketHome />} />
+      <Route path="/game/profile" element={<GameCyclePage />} />
+      <Route path="/game/cards" element={<GameCardsPage />} />
+      <Route path="/game/journeys" element={<GameJourneysPage />} />
+      <Route path="/game/rooms" element={<GameRoomsPage />} />
+      <Route path="/game/missions" element={<GameMissionsPage />} />
+      <Route path="/game/achievements" element={<GameAchievementsPage />} />
       <Route path="/game/market" element={<PlayMarketBoard />} />
       <Route path="/game/project/:projectId" element={<PlayMarketProject />} />
       <Route path="/game/leaderboard" element={<PlayMarketLeaderboard />} />
