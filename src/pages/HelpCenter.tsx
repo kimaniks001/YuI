@@ -53,7 +53,7 @@ export default function HelpCenter() {
   };
 
   const handleSearch = (event: React.FormEvent) => { event.preventDefault(); search(); };
-  const useSituation = (value: string) => { setQuery(value); setResults(searchArticles(value)); inputRef.current?.focus(); };
+  const handleSituation = (value: string) => { setQuery(value); setResults(searchArticles(value)); inputRef.current?.focus(); };
 
   const featured = [
     'what-is-securepay', 'what-is-ks-number', 'what-is-payment-ready',
@@ -113,7 +113,7 @@ export default function HelpCenter() {
                 <h2>You do not need the product name.</h2>
                 <p>Tell SecurePay the situation and let the knowledge system take you to the right explanation.</p>
                 <div className="b9-situation-chips">
-                  {SITUATIONS.map(item => <button key={item} type="button" onClick={() => useSituation(item)}>{item}</button>)}
+                  {SITUATIONS.map(item => <button key={item} type="button" onClick={() => handleSituation(item)}>{item}</button>)}
                   <Link to="/situations">See more situations <ArrowRight size={12} /></Link>
                 </div>
               </article>
