@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "check:routes": "node scripts/check-routes.mjs",
     "check:canonical-runtime": "node scripts/check-canonical-runtime.mjs",
-    "certify": "npm run check:yui-v1 && npm run check:trainer && npm run check:store && npm run check:store-owner && npm run check:store-share && npm run typecheck && npm run build && npm run check:routes && npm run check:canonical-runtime && npm run check:no-legacy-ui && npm run check:brand && npm run check:visual-constitution && npm run check:batch2-visual && npm run check:batch3-visual && npm run check:batch4-visual && npm run check:batch5-visual && npm run check:batch6-visual && npm run check:batch7-visual && npm run check:batch8-visual && npm run check:batch9-visual && npm run check:batch10-visual && npm run check:batch11-visual && npm run check:handshake-welcome && npm run check:visual-certification && npm run check:play-market",
+    "certify": "npm run check:yui-v1 && npm run check:trainer && npm run check:store && npm run check:store-owner && npm run check:store-share && npm run check:plug && npm run typecheck && npm run build && npm run check:routes && npm run check:canonical-runtime && npm run check:no-legacy-ui && npm run check:brand && npm run check:visual-constitution && npm run check:batch2-visual && npm run check:batch3-visual && npm run check:batch4-visual && npm run check:batch5-visual && npm run check:batch6-visual && npm run check:batch7-visual && npm run check:batch8-visual && npm run check:batch9-visual && npm run check:batch10-visual && npm run check:batch11-visual && npm run check:handshake-welcome && npm run check:visual-certification && npm run check:play-market",
     "check:no-legacy-ui": "node scripts/check-no-legacy-ui.mjs",
     "check:brand": "node scripts/check-securepay-brand.mjs",
     "check:visual-constitution": "node scripts/check-visual-constitution.mjs",
@@ -32,7 +32,8 @@
     "check:store": "node scripts/check-public-store.mjs",
     "check:store-owner": "node scripts/check-store-owner-studio.mjs",
     "check:store-share": "node scripts/check-store-sharing.mjs",
-    "certify:v1": "npm run check:yui-v1 && npm run check:trainer && npm run check:store && npm run check:store-owner && npm run check:store-share && npm run check:routes && npm run check:canonical-runtime && npm run check:no-legacy-ui && npm run check:brand && npm run check:visual-certification && npm run check:play-market",
+    "check:plug": "node scripts/check-plug-builder-economy.mjs",
+    "certify:v1": "npm run check:yui-v1 && npm run check:trainer && npm run check:store && npm run check:store-owner && npm run check:store-share && npm run check:plug && npm run check:routes && npm run check:canonical-runtime && npm run check:no-legacy-ui && npm run check:brand && npm run check:visual-certification && npm run check:play-market",
     "check:play-market": "node scripts/check-play-market.mjs"
   },
   "dependencies": {
@@ -52,7 +53,7 @@
     "eslint": "^9.9.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.11",
-    "globals": "^15.9.0",
+    "globals": "^15.9.1",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
