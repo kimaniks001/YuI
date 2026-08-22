@@ -5,7 +5,7 @@ Batch 11 implements four stable atmospheres: Market Day, Green Market, Town Mark
 
 A device-local Market Atmosphere setting is exposed separately from backend settings.
 
-The real signed-out Home gains a short once-per-session opening ritual. Two participant points meet, an agreement path becomes visible, and the official Living SecurePay Mark appears as guide. It is skippable, reduced-motion aware, and does not alter the approved Home layout after dismissal.
+The real signed-in Market gains a short opening ritual after a successful authenticated entry. Two participant points meet, an agreement path becomes visible, and the official Living SecurePay Mark appears as guide. It is skippable and reduced-motion aware. Its display preference is device-local, scoped by the trader's KS identity when available, and may replay after a long return; this preference stores no authentication or financial state and does not alter the approved Market layout after dismissal.
 
 Review: `/preview/themes`.
 
