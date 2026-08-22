@@ -105,11 +105,18 @@ export default function MyMarket() {
           {filter(market.active).length > 0 && <MarketSection eyebrow="Active" title="In progress" icon={<UsersRound size={18} />} items={filter(market.active)} empty="No other active agreements." />}
           <MarketSection eyebrow="Recently completed" title="Your recent records" icon={<FileCheck2 size={18} />} items={filter(market.completed).slice(0, 6)} empty="Completed agreements will stay available here as records." quiet />
 
-          <section className="grid gap-3 sm:grid-cols-2" aria-label="Market records and money flows">
+          <section className="grid gap-3 sm:grid-cols-3" aria-label="Market records, money flows and opportunities">
             <Link to="/market/flows" className="group flex items-center gap-4 rounded-2xl border border-green-700/10 bg-white p-4 shadow-sm transition hover:-translate-y-px hover:shadow-md">
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Money Flows</p>
                 <p className="mt-1 text-sm text-ink/55">See how the four agreement money shapes fit together without changing your current trade.</p>
+              </div>
+              <ArrowRight size={17} className="shrink-0 text-green-700 transition group-hover:translate-x-0.5" />
+            </Link>
+            <Link to="/opportunities" className="group flex items-center gap-4 rounded-2xl border border-green-700/10 bg-white p-4 shadow-sm transition hover:-translate-y-px hover:shadow-md">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Opportunities</p>
+                <p className="mt-1 text-sm text-ink/55">See what's waiting for you, what you've passed on, and what you've claimed — opportunity is never the same as agreement.</p>
               </div>
               <ArrowRight size={17} className="shrink-0 text-green-700 transition group-hover:translate-x-0.5" />
             </Link>
