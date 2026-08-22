@@ -1,4 +1,4 @@
-import { ArrowLeft, Split } from 'lucide-react';
+import { ArrowLeft, MessageSquareText, Split, TriangleAlert } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import AgreementConditionsRouteSection from '../components/agreement/AgreementConditionsRouteSection';
 import SecureFlowSection from '../components/agreement/SecureFlowSection';
@@ -10,10 +10,9 @@ import '../market-convergence.css';
 import '../batch4-agreement-workspace.css';
 
 /**
- * R14.5 route-level convergence for the authoritative agreement workspace.
- * The existing AgreementDetail keeps all backend-owned R1-R6 authority;
- * R7 SecureFlow and R8 structured location/time remain composed onto the same
- * /agreements/:agreementId route. R14.5 changes navigation/presentation only.
+ * Authoritative agreement workspace. Existing agreement and money authority is
+ * unchanged. MW-11/12 add navigation into consultation and recovery rooms; those
+ * surfaces still depend on SecurePayAPI for every real state transition.
  */
 export default function AgreementDetailWorkspace() {
   const { agreementId: rawAgreementId } = useParams<{ agreementId?: string }>();
@@ -35,6 +34,14 @@ export default function AgreementDetailWorkspace() {
           <ArrowLeft size={15} aria-hidden="true" /> All agreements
         </Link>
         <div className="flex flex-wrap items-center gap-2">
+          {agreementId && <>
+            <Link to={`/agreements/${agreementId}/consultation`} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-green-700/15 px-4 text-sm font-semibold text-green-700 hover:bg-green-50">
+              <MessageSquareText size={15} aria-hidden="true" /> Ask a Master
+            </Link>
+            <Link to={`/agreements/${agreementId}/recovery`} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-amber-700/15 px-4 text-sm font-semibold text-amber-800 hover:bg-amber-50">
+              <TriangleAlert size={15} aria-hidden="true" /> Recovery & Resolution
+            </Link>
+          </>}
           <Link to="/market/flows" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-green-700/15 px-4 text-sm font-semibold text-green-700 hover:bg-green-50">
             <Split size={15} aria-hidden="true" /> How money moves
           </Link>
