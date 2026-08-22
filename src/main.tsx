@@ -211,7 +211,7 @@ function AppShell() {
 
       {/* GAME. The new MW-13–18 surfaces use isolated Game authority. The
           accepted Play-the-Market prototype remains available as a project board. */}
-      <Route path="/game" element={<PlayMarketHome />} />
+      <Route path="/game" element={<GameCyclePage />} />
       <Route path="/game/profile" element={<GameCyclePage />} />
       <Route path="/game/cards" element={<GameCardsPage />} />
       <Route path="/game/journeys" element={<GameJourneysPage />} />
