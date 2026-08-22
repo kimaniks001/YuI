@@ -60,7 +60,7 @@ const RECIPIENT_ROLE_PATTERN =
   /contractor|plumber|electrician|designer|developer|worker|supplier|provider|painter|carpenter|mason|guardian|caregiver|rent|medicine|transport|books|fees/;
 
 // Detects comma-separated lists (3+ items, or 2+ with "and") as multiple recipients.
-const COMMA_LIST_PATTERN = /[,\/]\s|\band\b/;
+const COMMA_LIST_PATTERN = /[,/]\s|\band\b/;
 
 function countFromWho(who: string): { payerIsMany: boolean; recipientIsMany: boolean } {
   const lower = who.toLowerCase();
@@ -163,7 +163,7 @@ export function extractParticipantCounts(intent: CreationIntent): {
   // If no explicit count, try counting comma-list items in the recipient side.
   // e.g. "Contractor, Plumber and Electrician" → 3
   if (recipientCount === null && hasCommaList(recipientPart)) {
-    const parts = recipientPart.split(/[,/]|and/).filter((s) => s.trim().length > 0);
+    const parts = recipientPart.split(/[,/]|\band\b/).filter((s) => s.trim().length > 0);
     recipientCount = parts.length;
   }
 
@@ -190,6 +190,6 @@ export function extractRecipientLabels(intent: CreationIntent): string[] {
   const recipientPart = who.split('→')[1] ?? '';
   if (!recipientPart.trim()) return [];
   const cleaned = recipientPart.replace(/\(.*?\)/g, '').trim();
-  const parts = cleaned.split(/[,/]|and/).map((s) => s.trim()).filter((s) => s.length > 0);
+  const parts = cleaned.split(/[,/]|\band\b/).map((s) => s.trim()).filter((s) => s.length > 0);
   return parts;
 }
