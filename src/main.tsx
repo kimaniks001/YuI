@@ -31,6 +31,7 @@ import TraderCommunity from './pages/TraderCommunity';
 import TraderSettings from './pages/TraderSettings';
 import StoreOwnerStudio from './pages/StoreOwnerStudio';
 import StoreSharingStudio from './pages/StoreSharingStudio';
+import PlugDashboard from './pages/PlugDashboard';
 import DeveloperJourney from './pages/DeveloperJourney';
 import SituationsPage from './pages/SituationsPage';
 import HelpCenter from './pages/HelpCenter';
@@ -129,6 +130,8 @@ function AppShell() {
       <Route path="/market/statements" element={<Protected><MarketStatements /></Protected>} />
       <Route path="/store" element={<Protected><StoreOwnerStudio /></Protected>} />
       <Route path="/store/share" element={<Protected><StoreSharingStudio /></Protected>} />
+      <Route path="/plug" element={<Protected><PlugDashboard /></Protected>} />
+      <Route path="/builders" element={<Protected><PlugDashboard /></Protected>} />
       <Route path="/agreements" element={<Protected><TraderAgreements /></Protected>} />
       <Route path="/agreements/:agreementId" element={<Protected><AgreementDetailWorkspace /></Protected>} />
       <Route path="/actions" element={<Protected><TraderActionCentre /></Protected>} />
