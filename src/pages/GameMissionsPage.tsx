@@ -31,7 +31,7 @@ export default function GameMissionsPage() {
           const Icon = icons[challenge.kind];
           return <article key={challenge.id} className={`rounded-2xl border p-5 shadow-sm ${challenge.completedAt ? 'border-green-700/15 bg-green-50' : 'border-ink/8 bg-white'}`}>
             <Icon size={21} className={challenge.completedAt ? 'text-green-700' : 'text-amber-800'} />
-            <p className="mt-3 text-xs font-bold uppercase tracking-[0.14em] text-ink/40">{challenge.kind.replaceAll('_', ' ')}</p>
+            <p className="mt-3 text-xs font-bold uppercase tracking-[0.14em] text-ink/40">{challenge.kind.replace(/_/g, ' ')}</p>
             <h2 className="mt-1 font-display text-xl text-ink">{challenge.title}</h2>
             <p className="mt-2 text-sm leading-6 text-ink/55">{challenge.detail}</p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
