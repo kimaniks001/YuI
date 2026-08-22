@@ -19,7 +19,8 @@ requireText('src/lib/worldMode.ts', "const TRAINER_PREFIXES = ['/trainer', '/exp
 requireText('src/lib/worldMode.ts', "const GAME_PREFIXES = ['/game', '/play']", 'Game route family is incomplete.');
 requireText('src/lib/worldMode.ts', 'sessionStorage.setItem', 'Draft intent is not kept as session-only non-authoritative state.');
 requireText('src/api/securepayClient.ts', 'isSimulatedWorldRuntime()', 'API client does not re-check simulated world at request time.');
-requireText('src/main.tsx', '<Route path="/trainer" element={<ExplorerMap />} />', 'Trainer root route is missing.');
+requireText('src/main.tsx', '<Route path="/trainer" element={<TrainerHome />} />', 'Trainer root route is missing or no longer intentional.');
+requireText('src/main.tsx', '<Route path="/trainer/map" element={<ExplorerMap />} />', 'Trainer demo map route is missing.');
 requireText('src/main.tsx', '<Route path="/game" element={<PlayMarketHome />} />', 'Game root route is missing.');
 requireText('src/main.tsx', '<Route path="/dashboard" element={<Protected><SecurePayHome /></Protected>} />', 'Canonical dashboard is not real-Market gated.');
 requireText('src/main.tsx', '<Route path="/ks/:ksId" element={<KSProfile />} />', 'Canonical public KS route is not a real Market route.');

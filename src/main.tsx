@@ -42,6 +42,8 @@ import SecurityPage from './pages/SecurityPage';
 import CompliancePage from './pages/CompliancePage';
 import NotABankPage from './pages/NotABankPage';
 import NotFoundPage from './pages/NotFoundPage';
+import TrainerHome from './pages/TrainerHome';
+import TrainerSession from './pages/TrainerSession';
 import ExplorerMap from './pages/ExplorerMap';
 import ExplorerSettings from './pages/ExplorerSettings';
 import PlayMarketHome from './pages/PlayMarketHome';
@@ -49,8 +51,8 @@ import PlayMarketBoard from './pages/PlayMarketBoard';
 import PlayMarketProject from './pages/PlayMarketProject';
 import PlayMarketLeaderboard from './pages/PlayMarketLeaderboard';
 
-// Fixture-backed experience surfaces. MW-01 gives them dedicated Trainer
-// routes instead of allowing an environment flag to replace real Market URLs.
+// Fixture-backed experience surfaces. Trainer routes reuse these approved
+// visual rooms without giving them authentication or live API authority.
 import ReviewGallery from './review/ReviewGallery';
 import PreviewJourneys from './pages/PreviewJourneys';
 import PreviewWorkspacePage from './pages/PreviewWorkspacePage';
@@ -144,10 +146,11 @@ function AppShell() {
       <Route path="/compliance" element={<CompliancePage />} />
       <Route path="/not-a-bank" element={<NotABankPage />} />
 
-      {/* TRAINER. Every route below is fixture-backed or preview-mode and the
-          API client additionally hard-blocks live calls while the URL is in
-          the Trainer namespace. MW-02 will turn this into the guided product. */}
-      <Route path="/trainer" element={<ExplorerMap />} />
+      {/* TRAINER. Intentional guided learning product. Every demo remains
+          simulation-only and securePayFetch hard-blocks live API calls. */}
+      <Route path="/trainer" element={<TrainerHome />} />
+      <Route path="/trainer/session" element={<TrainerSession />} />
+      <Route path="/trainer/map" element={<ExplorerMap />} />
       <Route path="/trainer/home" element={<Home reviewMode />} />
       <Route path="/trainer/signin" element={<SignIn previewMode />} />
       <Route path="/trainer/signup" element={<Signup previewMode />} />
@@ -174,7 +177,7 @@ function AppShell() {
 
       {/* Legacy Explorer aliases remain safe and redirect into Trainer. */}
       <Route path="/explore" element={<Navigate to="/trainer" replace />} />
-      <Route path="/explore/journeys" element={<Navigate to="/trainer/journeys" replace />} />
+      <Route path="/explore/journeys" element={<Navigate to="/trainer" replace />} />
       <Route path="/explore/review" element={<Navigate to="/trainer/recovery" replace />} />
       <Route path="/explore/system" element={<Navigate to="/trainer/system" replace />} />
       <Route path="/explore/responsive" element={<Navigate to="/trainer/responsive" replace />} />
