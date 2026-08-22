@@ -1,14 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import LivingSecurePayMark from './LivingSecurePayMark';
 
-const SEEN_KEY = 'securepay.market.handshake.seen.v2';
-const LAST_SHOWN_KEY = 'securepay.market.handshake.lastShown.v2';
-const LONG_RETURN_INTERVAL_MS = 45 * 24 * 60 * 60 * 1000;
+const SEEN_KEY = 'securepay.market.opening.seen.v1';
 
 interface MarketOpeningRitualProps {
   forceOpen?: boolean;
-  authenticatedEntry?: boolean;
-  traderKey?: string | null;
   onClose?: () => void;
 }
 
@@ -17,68 +13,50 @@ function prefersReducedMotion() {
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-function preferenceKey(base: string, traderKey?: string | null) {
-  const safeTraderKey = traderKey?.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
-  return safeTraderKey ? `${base}.${safeTraderKey}` : base;
-}
-
-function shouldWelcomeAuthenticatedTrader(traderKey?: string | null) {
+function shouldShowOpening() {
   if (typeof window === 'undefined') return false;
   try {
-    const seen = window.localStorage.getItem(preferenceKey(SEEN_KEY, traderKey)) === 'seen';
-    if (!seen) return true;
-
-    const lastShown = Number(window.localStorage.getItem(preferenceKey(LAST_SHOWN_KEY, traderKey)));
-    return Number.isFinite(lastShown)
-      && lastShown > 0
-      && Date.now() - lastShown >= LONG_RETURN_INTERVAL_MS;
+    return window.sessionStorage.getItem(SEEN_KEY) !== 'seen';
   } catch {
-    // If a browser blocks visual-preference storage, a successful login may
-    // still receive the welcome. No auth or financial data is stored here.
+    // Visual memory is optional. If session storage is unavailable, showing
+    // the welcome is safer than silently making the opening unreachable.
     return true;
   }
 }
 
-function rememberWelcome(traderKey?: string | null) {
+function rememberOpening() {
   try {
-    window.localStorage.setItem(preferenceKey(SEEN_KEY, traderKey), 'seen');
-    window.localStorage.setItem(preferenceKey(LAST_SHOWN_KEY, traderKey), String(Date.now()));
+    window.sessionStorage.setItem(SEEN_KEY, 'seen');
   } catch {
-    // Visual memory is optional; authentication state is never persisted here.
+    // No identity, authentication or financial truth is stored here.
   }
 }
 
 /**
- * The Market handshake is an orientation ritual only.
+ * The Market opening is a signed-out orientation ritual only.
  *
- * Normal product use:
- *   authenticatedEntry -> first successful signed-in Market entry on this
- *   device for that KS identity, then only on a long return (45+ days).
- *
- * `forceOpen` exists for an explicit replay/special Market welcome. It must
- * never be used as evidence of payment, release, settlement, quorum or any
- * other financial/agreement truth.
+ * Normal Home use shows it once per browser session. `forceOpen` exists only
+ * for explicit replay on the visual-review surface. Neither path is evidence
+ * of identity, agreement, payment, release, settlement, quorum or any other
+ * backend-owned truth.
  */
 export default function MarketOpeningRitual({
   forceOpen = false,
-  authenticatedEntry = false,
-  traderKey = null,
   onClose,
 }: MarketOpeningRitualProps) {
-  const [visible, setVisible] = useState(() => (
-    forceOpen || (authenticatedEntry && shouldWelcomeAuthenticatedTrader(traderKey))
-  ));
+  const [visible, setVisible] = useState(() => forceOpen || shouldShowOpening());
   const [mediaFailed, setMediaFailed] = useState(false);
-  // An explicit Replay click is itself consent to view the motion, so the
-  // theme-lab replay plays the film even when the device prefers reduced motion.
-  // Automatic first-login welcomes still respect the OS accessibility setting.
+
+  // An explicit Replay click is consent to view the motion, so the theme-lab
+  // replay can play even when the device prefers reduced motion. Automatic
+  // signed-out welcomes still respect the OS accessibility setting.
   const [staticWelcome] = useState(() => !forceOpen && prefersReducedMotion());
 
   const close = useCallback(() => {
     setVisible(false);
-    if (!forceOpen && authenticatedEntry) rememberWelcome(traderKey);
+    if (!forceOpen) rememberOpening();
     onClose?.();
-  }, [authenticatedEntry, forceOpen, onClose, traderKey]);
+  }, [forceOpen, onClose]);
 
   useEffect(() => {
     if (!visible) return;
