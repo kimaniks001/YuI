@@ -87,6 +87,7 @@ import PreviewSystemStates from './pages/PreviewSystemStates';
 import PreviewResponsiveCertification from './pages/PreviewResponsiveCertification';
 import PreviewMarketThemes from './pages/PreviewMarketThemes';
 import PreviewVisualCertification from './pages/PreviewVisualCertification';
+import { PreviewBuilders, PreviewReferrals } from './pages/PreviewReferralEconomy';
 
 import './index.css';
 import './securepay-visual-constitution.css';
@@ -256,6 +257,8 @@ function AppShell() {
         <Route path="/preview/money" element={<PreviewMoneyRooms />} />
         <Route path="/preview/flows-community" element={<PreviewFlowCommunity />} />
         <Route path="/preview/review-recovery" element={<PreviewReviewRecovery />} />
+        <Route path="/preview/referrals" element={<PreviewReferrals />} />
+        <Route path="/preview/builders" element={<PreviewBuilders />} />
         <Route path="/preview/developers" element={<PreviewDeveloperJourney />} />
         <Route path="/preview/help" element={<HelpCenter />} />
         <Route path="/preview/trust" element={<TrustPage />} />
