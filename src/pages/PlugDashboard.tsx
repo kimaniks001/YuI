@@ -140,10 +140,10 @@ export default function PlugDashboard() {
         <div className="flex items-start gap-3">
           <Clock3 size={22} className="mt-0.5 shrink-0 text-orange-700" />
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-orange-700">Locked commercial rule · backend gate still required</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-orange-700">Locked commercial rule · backend-qualified</p>
             <h2 className="mt-1 font-display text-2xl">The 10th consecutive paid month belongs to the originating Plug.</h2>
-            <p className="mt-2 text-sm leading-6 text-ink/60">When a referred KSNumber completes ten consecutive successfully paid active subscription months, the SecurePay subscription fee actually collected for month 10 becomes a one-time Plug / Builder reward. A missed or inactive month breaks that streak. The same relationship cannot earn the same month-10 reward twice.</p>
-            <p className="mt-3 text-sm leading-6 text-ink/60">SecurePayAPI currently has no subscription activation / renewal / grace / suspension payment lifecycle, so this screen does not count months from identity age and does not claim a month-10 entitlement yet. That reward becomes visible only after the backend can prove ten consecutive successful subscription payments and record the reward exactly once.</p>
+            <p className="mt-2 text-sm leading-6 text-ink/60">When a referred KSNumber completes ten consecutive successfully paid active subscription months, the SecurePay subscription fee actually collected for month 10 becomes a one-time Plug / Builder retention entitlement. A missed qualifying month breaks that streak, and the same relationship cannot earn the same month-10 entitlement twice.</p>
+            <p className="mt-3 text-sm leading-6 text-ink/60">SecurePayAPI can now prove the consecutive paid-cycle qualification and create the one-time entitlement. YUI still keeps <strong>qualified</strong> separate from <strong>paid</strong>: the participant-facing progress projection and actual reward posting are separate boundaries, so this screen must not claim cash has been received until the backend exposes and proves that state.</p>
           </div>
         </div>
       </section>
