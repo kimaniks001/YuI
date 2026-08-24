@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
@@ -9,7 +9,6 @@ import {
   Gift,
   Handshake,
   LayoutGrid,
-  ListChecks,
   RefreshCw,
   Store,
   UsersRound,
@@ -92,26 +91,22 @@ export default function SecurePayHome() {
     ? formatDecimalMinorMoney(primaryAgreement.currency, primaryAgreement.proposedAmountMinor)
     : null;
 
-  const situation = useMemo(() => {
-    if (attention.length > 0) {
-      return {
+  const situation = attention.length > 0
+    ? {
         title: `${attention.length} agreement${attention.length === 1 ? '' : 's'} need${attention.length === 1 ? 's' : ''} you.`,
         detail: attention.length === 1
           ? 'SecurePay has an authoritative next action waiting for you.'
           : 'SecurePay has authoritative next actions waiting for you.',
-      };
-    }
-    if (active.length > 0) {
-      return {
-        title: 'Nothing urgent is showing.',
-        detail: `${active.length} active agreement${active.length === 1 ? ' is' : 's are'} still moving.`,
-      };
-    }
-    return {
-      title: 'Ready when you are.',
-      detail: 'Start with what you want to agree.',
-    };
-  }, [active.length, attention.length]);
+      }
+    : active.length > 0
+      ? {
+          title: 'Nothing urgent is showing.',
+          detail: `${active.length} active agreement${active.length === 1 ? ' is' : 's are'} still moving.`,
+        }
+      : {
+          title: 'Ready when you are.',
+          detail: 'Start with what you want to agree.',
+        };
 
   const startAgreement = () => {
     const statement = agreementDraft.trim();
