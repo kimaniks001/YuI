@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { BookOpen, RefreshCw } from 'lucide-react';
 import TraderShell from '../components/trader/TraderShell';
-import LivingSecurePayMark from '../components/LivingSecurePayMark';
 import TraderPageHeader from '../components/trader/TraderPageHeader';
 import { TraderEmptyState, TraderErrorState, TraderLoadingState, TraderUnavailableState } from '../components/trader/TraderStates';
 import { useAuth } from '../lib/auth';
@@ -12,7 +11,6 @@ import type { SecurePayMarketIdentity, SecurePayMarketStatement } from '../api/r
 function formatMinor(amountMinor: number, currency: string) {
   return `${currency} ${(amountMinor / 100).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
-
 function humanize(value: string) {
   const normalized = value.toLowerCase().replace(/[_-]+/g, ' ');
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
@@ -32,15 +30,10 @@ export default function MarketStatements() {
     setLoading(true);
     void getMyMarketIdentities(session.accessToken).then(result => {
       if (cancelled) return;
-      if (!result.ok || !result.data) {
-        setIdentities(null);
-        setLoading(false);
-        return;
-      }
+      if (!result.ok || !result.data) { setIdentities(null); setLoading(false); return; }
       const visible = result.data.filter(identity => identity.canView);
       setIdentities(visible);
-      const initial = visible.find(identity => identity.current)?.ksNumber || visible[0]?.ksNumber || '';
-      setSelectedKsNumber(initial);
+      setSelectedKsNumber(visible.find(identity => identity.current)?.ksNumber || visible[0]?.ksNumber || '');
       setLoading(false);
     });
     return () => { cancelled = true; };
@@ -50,79 +43,43 @@ export default function MarketStatements() {
     if (!session?.accessToken || !ksNumber) return;
     setLoading(true);
     const result = await getMarketStatement(session.accessToken, ksNumber);
-    if (result.ok && result.data) {
-      setStatement(result.data);
-      setStatementAvailable(true);
-    } else {
-      setStatement(null);
-      setStatementAvailable(false);
-    }
+    if (result.ok && result.data) { setStatement(result.data); setStatementAvailable(true); }
+    else { setStatement(null); setStatementAvailable(false); }
     setLoading(false);
   };
 
   useEffect(() => {
     if (selectedKsNumber) void loadStatement(selectedKsNumber);
-    // loadStatement is intentionally driven by authenticated identity selection.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedKsNumber, session?.accessToken]);
 
   if (!user || !session) return <Navigate to="/" replace />;
 
-  return (
-    <TraderShell>
-      <TraderPageHeader
-        eyebrow="My Market · Statements"
-        title="A record of what SecurePay actually posted."
-        description="Choose a KSNumber SecurePay says you may view. Every statement line stays attached to the ledger account and KSNumber that produced it."
-        aside={<div className="min-w-[260px] rounded-2xl border border-green-700/10 bg-green-50/60 p-4"><p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Statement rule</p><p className="mt-1 text-sm font-semibold">No combined Market balance</p><p className="mt-1 text-xs text-ink/50">Separate identities and ledger accounts remain separate.</p></div>}
-      />
+  return <TraderShell>
+    <TraderPageHeader eyebrow="Statements" title={<>Posted <span className="text-green-700">records</span></>} description="Choose a KSNumber and read only the ledger entries SecurePay returned." />
 
-      {loading && !identities && <TraderLoadingState />}
-      {!loading && identities === null && <TraderErrorState title="Statements could not be loaded" detail="SecurePay could not confirm which KSNumbers you may view. No statement was reconstructed in the browser." />}
+    {loading && !identities && <TraderLoadingState label="Loading statements…" />}
+    {!loading && identities === null && <TraderErrorState title="Statements could not be loaded" detail="Viewable KSNumbers are unavailable right now." />}
 
-      {identities && (
-        <div className="space-y-6">
-          <section className="rounded-2xl border border-ink/8 bg-white p-5 shadow-sm sm:p-6">
-            <label htmlFor="market-statement-identity" className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Statement for</label>
-            <select id="market-statement-identity" value={selectedKsNumber} onChange={event => setSelectedKsNumber(event.target.value)} className="mt-2 min-h-12 w-full max-w-xl rounded-xl border border-ink/10 bg-white px-4 text-sm font-semibold">
-              {identities.map(identity => <option key={identity.ksNumber} value={identity.ksNumber}>{identity.displayName || identity.identityType} · {identity.ksNumber}</option>)}
-            </select>
-            <p className="mt-2 text-xs text-ink/45">Only backend-authorised viewable identities appear here. This selector does not switch your acting identity.</p>
-          </section>
+    {identities && <div className="space-y-5">
+      <section className="market-search-card">
+        <label htmlFor="market-statement-identity" className="sr-only">Statement for</label>
+        <select id="market-statement-identity" value={selectedKsNumber} onChange={event => setSelectedKsNumber(event.target.value)} className="min-h-12 w-full rounded-xl border-0 bg-transparent px-3 text-sm font-semibold outline-none">
+          {identities.map(identity => <option key={identity.ksNumber} value={identity.ksNumber}>{identity.displayName || identity.identityType} · {identity.ksNumber}</option>)}
+        </select>
+      </section>
 
-          {loading && <TraderLoadingState />}
-          {!loading && !statementAvailable && <TraderUnavailableState title="Statement unavailable" detail={`SecurePay did not return the ledger statement for ${selectedKsNumber}. No activity or balance was inferred.`} />}
-          {!loading && statementAvailable && statement && statement.lines.length === 0 && <TraderEmptyState title="No posted ledger activity yet" detail={`SecurePay has no posted ledger entries to show for ${statement.ksNumber}.`} />}
+      {loading && <TraderLoadingState label="Loading record…" />}
+      {!loading && !statementAvailable && <TraderUnavailableState title="Statement unavailable" detail={`${selectedKsNumber} did not return a statement.`} />}
+      {!loading && statementAvailable && statement && statement.lines.length === 0 && <TraderEmptyState title="No posted activity" detail={`No ledger entries are showing for ${statement.ksNumber}.`} />}
 
-          {!loading && statementAvailable && statement && statement.lines.length > 0 && (
-            <section className="rounded-2xl border border-ink/8 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="statement-heading">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">{statement.ksNumber}</p><h2 id="statement-heading" className="mt-1 font-display text-2xl">{statement.displayName || 'Ledger statement'}</h2><p className="mt-1 text-xs text-ink/45">Generated {new Date(statement.generatedAt).toLocaleString('en-KE')}</p></div>
-                <button type="button" onClick={() => void loadStatement(selectedKsNumber)} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-ink/10 px-4 text-sm font-semibold"><RefreshCw size={15} /> Refresh</button>
-              </div>
+      {!loading && statementAvailable && statement && statement.lines.length > 0 && <section className="market-section-shell" aria-labelledby="statement-heading">
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-green-700">{statement.ksNumber}</p><h2 id="statement-heading" className="market-section-title">{statement.displayName || 'Statement'}</h2><p className="mt-1 text-[11px] text-ink/40">Updated {new Date(statement.generatedAt).toLocaleString('en-KE')}</p></div><button type="button" onClick={() => void loadStatement(selectedKsNumber)} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-ink/10 px-3 text-xs font-semibold"><RefreshCw size={14} /> Refresh</button></div>
 
-              <div className="mt-5 flex items-start gap-3 rounded-xl border border-green-700/10 bg-green-50/50 p-4 text-sm text-ink/60"><LivingSecurePayMark state="resting" size="sm" presence="polite" /><span>Amounts below are posted ledger entries. Debit and credit are shown exactly as SecurePay recorded them; this page does not reinterpret them as money available to spend.</span></div>
+        <ul className="mt-3 divide-y divide-ink/8">{statement.lines.map(line => <li key={line.statementLineId} className="py-3"><div className="flex gap-3"><span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-700"><BookOpen size={15} /></span><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{line.description || humanize(line.journalType)}</p><p className="mt-0.5 truncate text-xs text-ink/40">{humanize(line.accountPurpose)} · {new Date(line.postedAt).toLocaleDateString('en-KE')}</p></div><div className="shrink-0 text-right"><p className="text-sm font-semibold tabular-nums">{formatMinor(line.amountMinor, line.currency)}</p><p className="text-[10px] font-semibold text-ink/40">{line.direction}</p></div></div><details className="trader-progressive"><summary>Record details</summary><div className="flex flex-wrap gap-x-3 gap-y-1 font-mono text-[10px] text-ink/45"><span>{line.accountCode}</span><span>{line.journalReference}</span>{line.memo && <span>{line.memo}</span>}</div></details></div></div></li>)}</ul>
+      </section>}
 
-              <ul className="mt-5 divide-y divide-ink/8">
-                {statement.lines.map(line => (
-                  <li key={line.statementLineId} className="py-4">
-                    <div className="flex gap-3">
-                      <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-700"><BookOpen size={17} /></span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div><p className="text-sm font-semibold text-ink/85">{line.description || humanize(line.journalType)}</p><p className="mt-0.5 text-xs text-ink/45">{humanize(line.accountPurpose)} · {line.accountCode}</p></div>
-                          <div className="text-right"><p className="text-sm font-semibold tabular-nums">{formatMinor(line.amountMinor, line.currency)}</p><p className="mt-0.5 text-xs font-semibold text-ink/45">{line.direction}</p></div>
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink/40"><span className="font-mono">{statement.ksNumber}</span><span>{line.journalReference}</span><time>{new Date(line.postedAt).toLocaleString('en-KE')}</time>{line.memo && <span>{line.memo}</span>}</div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
-      )}
-    </TraderShell>
-  );
+      <details className="trader-progressive"><summary>How to read this statement</summary><div className="rounded-xl border border-green-700/10 bg-white p-3 text-xs leading-5 text-ink/52">These are posted ledger entries for the selected KSNumber. Debit and credit remain exactly as SecurePay recorded them; this view does not combine identities or turn the entries into an available balance.</div></details>
+    </div>}
+  </TraderShell>;
 }
