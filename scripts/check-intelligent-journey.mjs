@@ -120,6 +120,9 @@ if (!myMarket.includes("navigate('/create/journey', { state: { intent } })")) {
 if (!myMarket.includes('<textarea') || !myMarket.includes('agreementDraft')) {
   fail('signed-in Market agreement entry has regressed to a fake button');
 }
+if (!myMarket.includes('market-start-prompt-input') || !myMarket.includes('placeholder="What would you like to agree next?"')) {
+  fail('signed-in Market typing control is not visibly presented as the agreement entry surface');
+}
 if (myMarket.includes("dispatchEvent(new Event('open-ask-securepay'))")) {
   fail('signed-in Market agreement entry still opens the Ask SecurePay overlay instead of accepting typed intent');
 }
