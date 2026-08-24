@@ -13,6 +13,8 @@ const intent = read('src/lib/creationIntent.ts');
 const traderShell = read('src/components/trader/TraderShell.tsx');
 const traderHeader = read('src/components/trader/TraderPageHeader.tsx');
 const myMarket = read('src/pages/MyMarket.tsx');
+const signedInHome = read('src/pages/SecurePayHome.tsx');
+const floatingAssistant = read('src/components/FloatingAssistant.tsx');
 const publicHome = read('src/pages/Home.tsx');
 const createJourney = read('src/pages/CreateJourney.tsx');
 const traderContinuity = read('src/trader-public-continuity.css');
@@ -109,23 +111,39 @@ if (!publicHome.includes('handleIntentKeyDown') || !publicHome.includes("event.k
 if (!createJourney.includes('InlineAuthGate') || !createJourney.includes('loadCreationIntent()')) {
   fail('signed-out creation no longer preserves intent through the sign-in boundary');
 }
-if (!myMarket.includes('createCreationIntentFromText(statement)') || !myMarket.includes('saveCreationIntent(intent)')) {
-  fail('signed-in Market typing does not use the shared CreationIntent contract');
+
+for (const [name, source, placeholder] of [
+  ['My Market', myMarket, 'What would you like to agree next?'],
+  ['signed-in Home', signedInHome, 'What would you like to agree today?'],
+]) {
+  if (!source.includes('createCreationIntentFromText(statement)') || !source.includes('saveCreationIntent(intent)')) {
+    fail(`${name} typing does not use the shared CreationIntent contract`);
+  }
+  if (!source.includes("navigate('/create/journey', { state: { intent } })")) {
+    fail(`${name} typing does not start the agreement journey directly`);
+  }
+  if (!source.includes('<textarea') || !source.includes('agreementDraft')) {
+    fail(`${name} agreement entry has regressed to a fake button`);
+  }
+  if (!source.includes('market-start-prompt-input') || !source.includes(`placeholder="${placeholder}"`)) {
+    fail(`${name} typing control is not visibly presented as the agreement entry surface`);
+  }
+  if (!source.includes("event.key === 'Enter' && !event.shiftKey")) {
+    fail(`${name} no longer supports Enter-to-continue from the typing space`);
+  }
 }
-if (!myMarket.includes("navigate('/create/journey', { state: { intent } })")) {
-  fail('signed-in Market typing does not start the agreement journey directly');
-}
-if (!myMarket.includes('<textarea') || !myMarket.includes('agreementDraft')) {
-  fail('signed-in Market agreement entry has regressed to a fake button');
-}
-if (!myMarket.includes('market-start-prompt-input') || !myMarket.includes('placeholder="What would you like to agree next?"')) {
-  fail('signed-in Market typing control is not visibly presented as the agreement entry surface');
-}
-if (!myMarket.includes("event.key === 'Enter' && !event.shiftKey")) {
-  fail('signed-in Market no longer supports Enter-to-continue from the typing space');
-}
+
 if (myMarket.includes("dispatchEvent(new Event('open-ask-securepay'))")) {
-  fail('signed-in Market agreement entry still opens the Ask SecurePay overlay instead of accepting typed intent');
+  fail('My Market agreement entry still opens the Ask SecurePay overlay instead of accepting typed intent');
+}
+if (signedInHome.includes("dispatchEvent(new Event('open-ask-securepay'))")) {
+  fail('signed-in Home agreement entry still opens the Ask SecurePay overlay instead of accepting typed intent');
+}
+if (!floatingAssistant.includes("location.pathname === '/market'") || !floatingAssistant.includes("location.pathname === '/dashboard'")) {
+  fail('floating assistant can still compete with primary agreement-entry fields');
+}
+if (!floatingAssistant.includes('if (hasPrimaryAgreementEntry) return null')) {
+  fail('floating assistant is not suppressed where a primary agreement entry already exists');
 }
 
 if (!process.exitCode) {
