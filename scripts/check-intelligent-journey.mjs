@@ -20,6 +20,7 @@ const signedInHome = read('src/pages/SecurePayHome.tsx');
 const floatingAssistant = read('src/components/FloatingAssistant.tsx');
 const publicHome = read('src/pages/Home.tsx');
 const createJourney = read('src/pages/CreateJourney.tsx');
+const main = read('src/main.tsx');
 const traderContinuity = read('src/trader-public-continuity.css');
 
 for (const requiredKind of [
@@ -37,7 +38,7 @@ for (const requiredKind of [
   }
 }
 
-if (!experience.includes("kind: 'simple_purchase'\n") || !experience.includes("askStages: false")) {
+if (!experience.includes("kind: 'simple_purchase'\n") || !experience.includes('askStages: false')) {
   fail('simple purchase is not explicitly stage-free');
 }
 if (!experience.includes("kind: 'staged_project'")) {
@@ -103,6 +104,64 @@ if (!apiClient.includes('waitForCreationAuthentication') || !apiClient.includes(
 if (!apiClient.includes("path === '/api/v1/agreements'") || !apiClient.includes('resumedCreationAccessToken')) {
   fail('public trial cannot safely resume the exact agreement create request after sign-in');
 }
+if (!main.includes('<Route path="/create/journey" element={<CreateJourney />} />')) {
+  fail('/create/journey is no longer a public trial route');
+}
+if (main.includes('<Route path="/create/journey" element={<Protected>')) {
+  fail('/create/journey was incorrectly put behind route-level authentication');
+}
+
+// Signed-out Home interaction contract. The visual Home intent contains icon
+// components, which are functions and cannot be structured-cloned into browser
+// history. Only the pure CreationIntent is allowed across navigate() state.
+if (!publicHome.includes('function toCreationIntent(intent: Intent): CreationIntent')) {
+  fail('Home no longer strips visual-only fields before route navigation');
+}
+if (!publicHome.includes('const creationIntent = toCreationIntent(displayIntent)')) {
+  fail('Home does not build a serializable creation intent before continuing');
+}
+if (!publicHome.includes('saveCreationIntent(creationIntent)')) {
+  fail('signed-out Home no longer preserves its serializable intent');
+}
+if (!publicHome.includes("navigate(reviewMode ? '/preview/create' : '/create/journey', { state: { intent: creationIntent } })")) {
+  fail('signed-out Home no longer sends the serializable intent into the journey');
+}
+if (publicHome.includes('state: { intent: displayIntent }')) {
+  fail('Home is passing the visual Intent (including React icon functions) into browser history');
+}
+if (!publicHome.includes('handleIntentKeyDown') || !publicHome.includes("event.key === 'Enter' && !event.shiftKey")) {
+  fail('signed-out Home no longer supports Enter-to-continue from the typing space');
+}
+if ((publicHome.match(/onClick={goCreate}/g) ?? []).length < 3) {
+  fail('Home create actions are no longer consistently wired to the shared goCreate handler');
+}
+if (!publicHome.includes('onClick={() => chooseIntent(intent)}')) {
+  fail('popular Home trade/life choices no longer update the selected agreement intent');
+}
+if (!publicHome.includes('setExpandedTrade') || !publicHome.includes('setExpandedLife')) {
+  fail('Home Explore trade/life controls are not wired');
+}
+if (!publicHome.includes("document.getElementById('discover-securepay')?.scrollIntoView")) {
+  fail('Home learn-more control is not wired to its destination');
+}
+for (const route of ['/signin', '/situations', '/help', '/trust']) {
+  if (!publicHome.includes(`'${route}'`) && !publicHome.includes(`"${route}"`)) {
+    fail(`Home is missing its ${route} navigation`);
+  }
+  if (!main.includes(`path="${route}"`)) {
+    fail(`Home points to ${route}, but the route is not registered`);
+  }
+}
+if (!publicHome.includes('id="discover-securepay"')) {
+  fail('Home learn-more destination has disappeared');
+}
+if (!publicHome.includes('Use this information to continue')) {
+  fail('Home demo card has lost its continue action');
+}
+
+if (!createJourney.includes('InlineAuthGate') || !createJourney.includes('loadCreationIntent()')) {
+  fail('creation no longer preserves intent through the inline sign-in boundary');
+}
 
 if (!traderShell.includes('SecurePayLogo')) {
   fail('signed-in trader shell is not using the official SecurePay logo');
@@ -124,16 +183,6 @@ if (!myMarket.includes('signed-in-market-hero') || !myMarket.includes('market-st
 }
 if (!myMarket.includes('SecurePay is with the agreement')) {
   fail('My Market is missing the living agreement-guide panel');
-}
-
-if (!publicHome.includes('saveCreationIntent(displayIntent)') || !publicHome.includes("'/create/journey'")) {
-  fail('signed-out Home no longer preserves typed intent into the creation journey');
-}
-if (!publicHome.includes('handleIntentKeyDown') || !publicHome.includes("event.key === 'Enter' && !event.shiftKey")) {
-  fail('signed-out Home no longer supports Enter-to-continue from the typing space');
-}
-if (!createJourney.includes('InlineAuthGate') || !createJourney.includes('loadCreationIntent()')) {
-  fail('creation no longer preserves intent through the inline sign-in boundary');
 }
 
 for (const [name, source, placeholder] of [
@@ -171,5 +220,5 @@ if (!floatingAssistant.includes('if (hasPrimaryAgreementEntry) return null')) {
 }
 
 if (!process.exitCode) {
-  console.log('Intelligent adaptive journey, public trial, typed agreement entry and signed-in visual continuity guard passed.');
+  console.log('Intelligent journey, public trial, Home interactions, typed entry and signed-in continuity guard passed.');
 }
