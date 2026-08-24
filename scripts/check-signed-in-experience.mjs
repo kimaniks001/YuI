@@ -55,7 +55,8 @@ if (!agreements.includes('counts[item]')) fail('Agreements filters lost their at
 if (!actions.includes('actionCount={totalElements}')) fail('Action Centre no longer carries backend attention into shared navigation');
 if (!money.includes('How settlement accounts work') || !money.includes('What is not available here yet')) fail('Money doctrine is no longer progressively disclosed');
 if (!statements.includes('How to read this statement')) fail('Statement doctrine is no longer progressively disclosed');
-if (!store.includes("type StoreView = 'overview' | 'offers' | 'profile'")) fail('KS Store has regressed to one long editor page');
+if (!store.includes("type StoreView = 'overview' | 'design' | 'offers' | 'profile'")) fail('KS Store has regressed from the task-first owner Studio');
+if (!store.includes("setView('design')") || !store.includes("setView('offers')") || !store.includes("setView('profile')")) fail('KS Store task tabs are not all reachable');
 if (!plug.includes("type PlugView = 'overview' | 'people' | 'help'")) fail('Plug workspace has regressed to one long page');
 
 if (!process.exitCode) console.log(`Signed-in experience guard passed across ${protectedPages.length} protected page modules.`);
