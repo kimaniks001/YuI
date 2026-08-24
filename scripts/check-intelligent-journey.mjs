@@ -10,6 +10,9 @@ const experience = read('src/lib/creationExperience.ts');
 const engine = read('src/lib/creationEngine.ts');
 const shell = read('src/components/creation/CreationShell.tsx');
 const intent = read('src/lib/creationIntent.ts');
+const auth = read('src/lib/auth.tsx');
+const apiClient = read('src/api/securepayClient.ts');
+const requireAuth = read('src/routing/RequireAuth.tsx');
 const traderShell = read('src/components/trader/TraderShell.tsx');
 const traderHeader = read('src/components/trader/TraderPageHeader.tsx');
 const myMarket = read('src/pages/MyMarket.tsx');
@@ -80,6 +83,27 @@ if (!intent.includes('funeral|burial|bereavement')) {
   fail('sensitive life contexts are not recognised by intent parsing');
 }
 
+// Public try-before-sign-in contract. A saved intent may unlock only the
+// creation question engine; protected Market rooms still require a real session.
+if (!intent.includes('CREATION_TRIAL_STARTED_EVENT') || !intent.includes('CREATION_AUTH_REQUIRED_EVENT')) {
+  fail('creation intent no longer opens the public trial/auth boundary');
+}
+if (!auth.includes("id: 'securepay-public-trial'") || !auth.includes('trialMode')) {
+  fail('AuthProvider no longer exposes the non-authoritative creation trial identity');
+}
+if (!auth.includes('CREATION_AUTH_COMPLETED_EVENT') || !auth.includes('detail: { accessToken: result.data.accessToken }')) {
+  fail('completed inline authentication no longer resumes a waiting create request');
+}
+if (!requireAuth.includes('if (!session)')) {
+  fail('protected Market routes are not requiring a genuine backend session');
+}
+if (!apiClient.includes('waitForCreationAuthentication') || !apiClient.includes('CREATION_AUTH_REQUIRED_EVENT')) {
+  fail('agreement creation no longer pauses for authentication at the write boundary');
+}
+if (!apiClient.includes("path === '/api/v1/agreements'") || !apiClient.includes('resumedCreationAccessToken')) {
+  fail('public trial cannot safely resume the exact agreement create request after sign-in');
+}
+
 if (!traderShell.includes('SecurePayLogo')) {
   fail('signed-in trader shell is not using the official SecurePay logo');
 }
@@ -109,7 +133,7 @@ if (!publicHome.includes('handleIntentKeyDown') || !publicHome.includes("event.k
   fail('signed-out Home no longer supports Enter-to-continue from the typing space');
 }
 if (!createJourney.includes('InlineAuthGate') || !createJourney.includes('loadCreationIntent()')) {
-  fail('signed-out creation no longer preserves intent through the sign-in boundary');
+  fail('creation no longer preserves intent through the inline sign-in boundary');
 }
 
 for (const [name, source, placeholder] of [
@@ -147,5 +171,5 @@ if (!floatingAssistant.includes('if (hasPrimaryAgreementEntry) return null')) {
 }
 
 if (!process.exitCode) {
-  console.log('Intelligent adaptive journey, typed agreement entry and signed-in visual continuity guard passed.');
+  console.log('Intelligent adaptive journey, public trial, typed agreement entry and signed-in visual continuity guard passed.');
 }
