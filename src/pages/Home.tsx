@@ -30,7 +30,7 @@ import {
 import SecurePayLogo from '../components/SecurePayLogo';
 import LivingSecurePayMark from '../components/LivingSecurePayMark';
 import MarketOpeningRitual from '../components/MarketOpeningRitual';
-import { saveCreationIntent } from '../lib/creationIntent';
+import { saveCreationIntent, type CreationIntent } from '../lib/creationIntent';
 
 type IntentFamily = 'trade' | 'life';
 
@@ -342,6 +342,26 @@ function inferCustomGuidance(statement: string, active: Intent): Pick<Intent, 'w
   };
 }
 
+function toCreationIntent(intent: Intent): CreationIntent {
+  // IMPORTANT: Home's visual Intent also contains `icon`, a React component
+  // function. Browser history uses structured cloning and cannot clone
+  // functions. Only the pure agreement fields are allowed across the route
+  // boundary, otherwise navigate() throws DataCloneError and the Home button
+  // appears to do nothing.
+  return {
+    id: intent.id,
+    family: intent.family,
+    statement: intent.statement,
+    who: intent.who,
+    what: intent.what,
+    amount: intent.amount,
+    mustHappen: intent.mustHappen,
+    nextStep: intent.nextStep,
+    nextStepShort: intent.nextStepShort,
+    moneyMoves: intent.moneyMoves,
+  };
+}
+
 interface HomeProps {
   reviewMode?: boolean;
 }
@@ -400,8 +420,9 @@ export default function Home({ reviewMode = false }: HomeProps) {
 
   const goCreate = () => {
     if (inputTouched && !draftStatement.trim()) return;
-    saveCreationIntent(displayIntent);
-    navigate(reviewMode ? '/preview/create' : '/create/journey', { state: { intent: displayIntent } });
+    const creationIntent = toCreationIntent(displayIntent);
+    saveCreationIntent(creationIntent);
+    navigate(reviewMode ? '/preview/create' : '/create/journey', { state: { intent: creationIntent } });
   };
 
   const handleIntentKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -622,7 +643,7 @@ export default function Home({ reviewMode = false }: HomeProps) {
                   <span className="hp-family-symbol hp-family-symbol-trade"><Handshake size={31} /></span>
                 </div>
                 {intentGrid(popularTrade, 'trade')}
-                <button type="button" className="hp-explore hp-explore-trade" onClick={() => setExpandedTrade((value) => !value)}>
+                <button type="button" className="hp-explore hp-explore-trade" onClick={() => setExpandedTrade((value) => !value)} aria-expanded={expandedTrade}>
                   {expandedTrade ? 'Show popular trade options' : 'Explore trade options'} <ArrowRight size={17} />
                 </button>
               </section>
@@ -633,7 +654,7 @@ export default function Home({ reviewMode = false }: HomeProps) {
                   <span className="hp-family-symbol hp-family-symbol-life"><TreePine size={31} /></span>
                 </div>
                 {intentGrid(popularLife, 'life')}
-                <button type="button" className="hp-explore hp-explore-life" onClick={() => setExpandedLife((value) => !value)}>
+                <button type="button" className="hp-explore hp-explore-life" onClick={() => setExpandedLife((value) => !value)} aria-expanded={expandedLife}>
                   {expandedLife ? 'Show popular life options' : 'Explore life options'} <ArrowRight size={17} />
                 </button>
               </section>
@@ -705,6 +726,7 @@ export default function Home({ reviewMode = false }: HomeProps) {
                 type="button"
                 className={`hp-explore ${mobileFamily === 'trade' ? 'hp-explore-trade' : 'hp-explore-life'}`}
                 onClick={setMobileFamilyExpanded}
+                aria-expanded={mobileFamilyExpanded}
               >
                 {mobileFamilyExpanded ? 'Show popular options' : mobileFamily === 'trade' ? 'Explore trade options' : 'Explore life options'} <ArrowRight size={17} />
               </button>
