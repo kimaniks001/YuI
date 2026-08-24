@@ -24,6 +24,8 @@ jobs:
         run: npm run check:signed-in-experience
       - name: Intelligent journey guard
         run: npm run check:intelligent-journey
+      - name: Premium public Store guard
+        run: npm run check:store
       - name: Store owner guard
         run: npm run check:store-owner
       - name: Store sharing guard
