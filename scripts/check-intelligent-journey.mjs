@@ -13,6 +13,8 @@ const intent = read('src/lib/creationIntent.ts');
 const traderShell = read('src/components/trader/TraderShell.tsx');
 const traderHeader = read('src/components/trader/TraderPageHeader.tsx');
 const myMarket = read('src/pages/MyMarket.tsx');
+const publicHome = read('src/pages/Home.tsx');
+const createJourney = read('src/pages/CreateJourney.tsx');
 const traderContinuity = read('src/trader-public-continuity.css');
 
 for (const requiredKind of [
@@ -100,6 +102,28 @@ if (!myMarket.includes('SecurePay is with the agreement')) {
   fail('My Market is missing the living agreement-guide panel');
 }
 
+// Agreement entry is one behaviour before and after authentication.
+// Public Home preserves the words before entering CreateJourney; CreateJourney
+// owns the sign-in gate; signed-in My Market must use the same CreationIntent contract.
+if (!publicHome.includes('saveCreationIntent(displayIntent)') || !publicHome.includes("'/create/journey'")) {
+  fail('signed-out Home no longer preserves typed intent into the creation journey');
+}
+if (!createJourney.includes('InlineAuthGate') || !createJourney.includes('loadCreationIntent()')) {
+  fail('signed-out creation no longer preserves intent through the sign-in boundary');
+}
+if (!myMarket.includes('createCreationIntentFromText(statement)') || !myMarket.includes('saveCreationIntent(intent)')) {
+  fail('signed-in Market typing does not use the shared CreationIntent contract');
+}
+if (!myMarket.includes("navigate('/create/journey', { state: { intent } })")) {
+  fail('signed-in Market typing does not start the agreement journey directly');
+}
+if (!myMarket.includes('<textarea') || !myMarket.includes('agreementDraft')) {
+  fail('signed-in Market agreement entry has regressed to a fake button');
+}
+if (myMarket.includes("dispatchEvent(new Event('open-ask-securepay'))")) {
+  fail('signed-in Market agreement entry still opens the Ask SecurePay overlay instead of accepting typed intent');
+}
+
 if (!process.exitCode) {
-  console.log('Intelligent adaptive journey and signed-in visual continuity guard passed.');
+  console.log('Intelligent adaptive journey, typed agreement entry and signed-in visual continuity guard passed.');
 }
