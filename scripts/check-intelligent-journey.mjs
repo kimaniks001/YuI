@@ -17,6 +17,8 @@ const traderShell = read('src/components/trader/TraderShell.tsx');
 const traderHeader = read('src/components/trader/TraderPageHeader.tsx');
 const myMarket = read('src/pages/MyMarket.tsx');
 const signedInHome = read('src/pages/SecurePayHome.tsx');
+const comingUp = read('src/components/trader/TraderComingUp.tsx');
+const traderHomeCss = read('src/trader-home.css');
 const floatingAssistant = read('src/components/FloatingAssistant.tsx');
 const publicHome = read('src/pages/Home.tsx');
 const createJourney = read('src/pages/CreateJourney.tsx');
@@ -172,6 +174,12 @@ if (!traderShell.includes('hp-atmosphere') || !traderShell.includes('hp-watermar
 if (!traderShell.includes('Start an agreement')) {
   fail('signed-in primary CTA has drifted from agreement-first language');
 }
+if (!traderShell.includes('/dashboard#start-agreement')) {
+  fail('signed-in header start action is not connected to the real Home agreement entry');
+}
+if (!traderShell.includes('actionCount') || !traderShell.includes('trader-mobile-nav-badge')) {
+  fail('mobile Action Centre no longer surfaces backend-authoritative attention count');
+}
 if (!traderHeader.includes('trader-page-title')) {
   fail('signed-in page headers are not using the shared editorial hierarchy');
 }
@@ -185,9 +193,57 @@ if (!myMarket.includes('SecurePay is with the agreement')) {
   fail('My Market is missing the living agreement-guide panel');
 }
 
-for (const [name, source, placeholder] of [
-  ['My Market', myMarket, 'What would you like to agree next?'],
-  ['signed-in Home', signedInHome, 'What would you like to agree today?'],
+// Signed-in Home is deliberately different from the public landing page:
+// it reports the trader's current situation rather than re-explaining SecurePay.
+for (const required of [
+  'trader-home-today',
+  'trader-home-situation-strip',
+  'trader-home-focus',
+  'trader-home-agreement-entry',
+  'TraderComingUp',
+  'attentionRequired',
+  'countComingUpThisWeek',
+]) {
+  if (!signedInHome.includes(required)) fail(`signed-in Home is missing ${required}`);
+}
+if (!signedInHome.includes('createCreationIntentFromText(statement)') || !signedInHome.includes('saveCreationIntent(intent)')) {
+  fail('signed-in Home typing does not use the shared CreationIntent contract');
+}
+if (!signedInHome.includes("navigate('/create/journey', { state: { intent } })")) {
+  fail('signed-in Home typing does not start the agreement journey directly');
+}
+if (!signedInHome.includes('id="signed-in-agreement-entry"') || !signedInHome.includes("event.key === 'Enter' && !event.shiftKey")) {
+  fail('signed-in Home natural-language entry is not a real Enter-enabled textarea');
+}
+if (!signedInHome.includes('slice(0, 2).map(item => <TraderAgreementCard')) {
+  fail('signed-in Home is showing too many agreement cards before See all');
+}
+if (!signedInHome.includes('activity.slice(0, 2)')) {
+  fail('signed-in Home is showing too much recent activity');
+}
+for (const removedCopy of [
+  'Start with the agreement, not the payment.',
+  'Your work stays primary. SecurePay helps keep the agreement clear.',
+  'The SecurePay identity attached to this signed-in view.',
+]) {
+  if (signedInHome.includes(removedCopy)) fail(`signed-in Home has regressed to explanatory dashboard copy: ${removedCopy}`);
+}
+
+// The planning strip may show only backend-returned agreement deadlines/actions.
+// A day with no such records is never called globally free or available.
+for (const required of ['agreement.nextActions', 'agreement.nextDeadline', 'Agreement dates only', 'No SecurePay agreement commitments are recorded for this day.', 'Plan on this day']) {
+  if (!comingUp.includes(required)) fail(`Coming up planner is missing truthful planning behaviour: ${required}`);
+}
+if (comingUp.includes('You are free') || comingUp.includes('Available all day')) {
+  fail('Coming up planner is claiming availability that SecurePay cannot prove');
+}
+if (!traderHomeCss.includes('@media(max-width:760px)') || !traderHomeCss.includes('trader-home-around-rail') || !traderHomeCss.includes('trader-coming-up-days')) {
+  fail('signed-in Home is missing its mobile-first compact planning/around-you layout');
+}
+
+for (const [name, source] of [
+  ['My Market', myMarket],
+  ['signed-in Home', signedInHome],
 ]) {
   if (!source.includes('createCreationIntentFromText(statement)') || !source.includes('saveCreationIntent(intent)')) {
     fail(`${name} typing does not use the shared CreationIntent contract`);
@@ -197,9 +253,6 @@ for (const [name, source, placeholder] of [
   }
   if (!source.includes('<textarea') || !source.includes('agreementDraft')) {
     fail(`${name} agreement entry has regressed to a fake button`);
-  }
-  if (!source.includes('market-start-prompt-input') || !source.includes(`placeholder="${placeholder}"`)) {
-    fail(`${name} typing control is not visibly presented as the agreement entry surface`);
   }
   if (!source.includes("event.key === 'Enter' && !event.shiftKey")) {
     fail(`${name} no longer supports Enter-to-continue from the typing space`);
@@ -220,5 +273,5 @@ if (!floatingAssistant.includes('if (hasPrimaryAgreementEntry) return null')) {
 }
 
 if (!process.exitCode) {
-  console.log('Intelligent journey, public trial, Home interactions, typed entry and signed-in continuity guard passed.');
+  console.log('Intelligent journey, public trial, Home interactions, situation-first signed-in Home and truthful planning guard passed.');
 }
