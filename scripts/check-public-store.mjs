@@ -4,6 +4,8 @@ const read = (path) => fs.readFileSync(path, 'utf8');
 const endpoints = read('src/api/storeEndpoints.ts');
 const types = read('src/api/storeTypes.ts');
 const profile = read('src/pages/KSProfile.tsx');
+const studio = read('src/pages/StoreOwnerStudio.tsx');
+const signup = read('src/pages/Signup.tsx');
 const css = read('src/ks-store-premium.css');
 const notFound = read('src/pages/NotFoundPage.tsx');
 const failures = [];
@@ -26,9 +28,13 @@ check('Listing is not represented as reservation or sale', profile.includes('Lis
 check('Public Store keeps active identity language truthful', profile.includes('Active') && !profile.includes('Identity verified'));
 check('Premium Store has responsive visual system', css.includes('.ks-store-hero') && css.includes('.ks-store-offer-grid') && css.includes('@media(max-width:760px)'));
 check('Theme system produces visibly different Stores', css.includes('.ks-store-theme-sunset') && css.includes('.ks-store-theme-midnight') && css.includes('.ks-store-theme-ocean'));
+check('Owner Studio controls the persisted public Store look', studio.includes("type StoreView = 'overview' | 'design' | 'offers' | 'profile'") && studio.includes('storefrontPreset') && studio.includes('storefrontTheme'));
+check('Signup explains Digital Store before account completion', signup.includes('Your Digital Store') && signup.includes('More than a login') && signup.includes('securepay.ke/KS…'));
+check('Signup completion reveals the user Store address', signup.includes('Your Digital Store address') && signup.includes('securepay.ke/{ksNumber}'));
+check('Signup does not imply KSNumber itself moves money', signup.includes('does not itself move money') && signup.includes('not a bank account'));
 
 if (failures.length) {
   console.error(`Public Store certification failed (${failures.length}).`);
   process.exit(1);
 }
-console.log('Premium public KS Digital Store guard passed.');
+console.log('Premium public KS Digital Store and signup value guard passed.');
