@@ -10,6 +10,10 @@ import TraderPageHeader from '../components/trader/TraderPageHeader';
 import TraderAgreementCard from '../components/trader/TraderAgreementCard';
 import { TraderEmptyState, TraderErrorState, TraderLoadingState, TraderUnavailableState } from '../components/trader/TraderStates';
 
+function openAgreementPrompt() {
+  window.dispatchEvent(new Event('open-ask-securepay'));
+}
+
 export default function SecurePayHome() {
   const { user, session } = useAuth();
   const { state, agreements, activity, activityAvailable, retry } = useTraderWorkspace();
@@ -100,7 +104,7 @@ export default function SecurePayHome() {
         <section className="rounded-2xl border border-ink/8 bg-white p-5 shadow-sm sm:p-6"><h2 className="font-display text-2xl">Recent activity</h2>{!activityAvailable ? <div className="mt-4"><TraderUnavailableState title="Activity unavailable" detail="Recent movement could not be retrieved. Your agreements were not changed." /></div> : activity.length ? <ul className="mt-4 space-y-4">{activity.slice(0, 5).map(item => <li key={item.id} className="flex gap-3 border-b border-ink/8 pb-4 last:border-0"><span className="mt-1 size-2 shrink-0 rounded-full bg-green-600" /><div><p className="text-sm font-medium">{item.description}</p><time className="mt-1 block text-xs text-ink/40">{new Date(item.timestamp).toLocaleString('en-KE')}</time></div></li>)}</ul> : <div className="mt-4"><TraderEmptyState title="No recent movement" detail="Activity recorded for this account will appear here." /></div>}</section>
       </div>
 
-      <section className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-green-700/10 bg-green-50/60 p-6 sm:flex-row sm:items-center"><div className="flex gap-3"><FileCheck2 className="mt-0.5 text-green-700" /><div><h2 className="font-display text-xl">Trader first. Agreement first.</h2><p className="mt-1 text-sm text-ink/55">Your work stays primary. Account and financial context only appears when SecurePay can prove it.</p></div></div><Link to="/create" className="sp-btn-primary inline-flex min-h-11 items-center px-5 text-sm">Start an agreement</Link></section>
+      <section className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-green-700/10 bg-green-50/60 p-6 sm:flex-row sm:items-center"><div className="flex gap-3"><FileCheck2 className="mt-0.5 text-green-700" /><div><h2 className="font-display text-xl">Trader first. Agreement first.</h2><p className="mt-1 text-sm text-ink/55">Your work stays primary. Account and financial context only appears when SecurePay can prove it.</p></div></div><button type="button" onClick={openAgreementPrompt} className="sp-btn-primary inline-flex min-h-11 items-center px-5 text-sm">Start an agreement</button></section>
     </div>}
   </TraderShell>;
 }
