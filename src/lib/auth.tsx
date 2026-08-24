@@ -229,6 +229,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setChallenge(null);
     setSignupChallenge(null);
     setTrialMode(false);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(CREATION_TRIAL_ENDED_EVENT));
+    }
   };
 
   const trialUser: SecurePayUser | null = !session && trialMode
