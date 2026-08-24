@@ -17,7 +17,7 @@ import KSActivation from './pages/KSActivation';
 import KSProfile from './pages/KSProfile';
 import StoreOfferDetail from './pages/StoreOfferDetail';
 import SecureLinkJoin from './pages/SecureLinkJoin';
-import CreateJourney from './pages/CreateJourney';
+import CreateJourney from './pages/CreateJourneyV2';
 import AgreementDetailWorkspace from './pages/AgreementDetailWorkspace';
 import AgreementConsultation from './pages/AgreementConsultation';
 import AgreementRecovery from './pages/AgreementRecovery';
