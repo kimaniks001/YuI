@@ -14,11 +14,7 @@ const navigation = [
   { to: '/actions', label: 'Action Centre', mobileLabel: 'Actions', icon: ListChecks },
 ];
 
-function openAgreementPrompt() {
-  window.dispatchEvent(new Event('open-ask-securepay'));
-}
-
-export default function TraderShell({ children }: { children: ReactNode }) {
+export default function TraderShell({ children, actionCount = 0 }: { children: ReactNode; actionCount?: number }) {
   const { user, signOut } = useAuth();
   const [accountOpen, setAccountOpen] = useState(false);
   const identity = user?.displayName?.trim() || user?.ksNumber || 'Account';
@@ -60,16 +56,17 @@ export default function TraderShell({ children }: { children: ReactNode }) {
               end
               className={({ isActive }) => `${isActive ? 'is-active' : ''} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2`}
             >
-              {label}
+              <span>{label}</span>
+              {to === '/actions' && actionCount > 0 && <span className="trader-nav-badge" aria-label={`${actionCount} items need you`}>{actionCount > 99 ? '99+' : actionCount}</span>}
             </NavLink>
           ))}
         </nav>
 
         <div className="trader-master-actions">
           <div className="trader-environment-wrap"><EnvironmentBadge /></div>
-          <button type="button" onClick={openAgreementPrompt} aria-label="Start an agreement" className="hp-start-btn">
+          <Link to="/dashboard#start-agreement" aria-label="Start an agreement" className="hp-start-btn">
             <Zap size={15} aria-hidden="true" /> <span className="trader-master-start-copy">Start an agreement</span>
-          </button>
+          </Link>
           <button type="button" aria-label="Notifications unavailable" disabled className="hidden min-h-11 min-w-11 items-center justify-center rounded-full text-ink/30 xl:inline-flex">
             <Bell size={19} aria-hidden="true" />
           </button>
@@ -90,6 +87,7 @@ export default function TraderShell({ children }: { children: ReactNode }) {
                 <div className="border-b border-green-700/10 px-3 py-2">
                   <p className="text-xs text-ink/40">Signed in as</p>
                   <p className="mt-0.5 truncate text-sm font-semibold">{identity}</p>
+                  {user?.ksNumber && <p className="mt-1 font-mono text-xs font-semibold text-green-800">{user.ksNumber}</p>}
                 </div>
                 <Link to="/signin" onClick={() => setAccountOpen(false)} className="mt-1 flex min-h-11 items-center rounded-xl px-3 text-sm hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700">Account</Link>
                 <Link to="/store" onClick={() => setAccountOpen(false)} className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700"><Store size={15} aria-hidden="true" /> My KS Store</Link>
@@ -117,8 +115,9 @@ export default function TraderShell({ children }: { children: ReactNode }) {
       <nav aria-label="Mobile trader navigation" className="trader-mobile-nav fixed inset-x-0 bottom-0 z-50 border-t border-green-700/10 px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(25,60,18,0.08)] md:hidden">
         <div className="mx-auto grid max-w-md grid-cols-4">
           {navigation.map(({ to, mobileLabel, icon: Icon }) => (
-            <NavLink key={to} to={to} end className={({ isActive }) => `flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 ${isActive ? 'bg-green-50/70 text-green-700' : 'text-ink/55'}`}>
-              <Icon size={20} aria-hidden="true" /> <span className="max-w-full truncate">{mobileLabel}</span>
+            <NavLink key={to} to={to} end className={({ isActive }) => `relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 ${isActive ? 'bg-green-50/70 text-green-700' : 'text-ink/55'}`}>
+              <span className="relative inline-flex"><Icon size={20} aria-hidden="true" />{to === '/actions' && actionCount > 0 && <span className="trader-mobile-nav-badge" aria-label={`${actionCount} items need you`}>{actionCount > 9 ? '9+' : actionCount}</span>}</span>
+              <span className="max-w-full truncate">{mobileLabel}</span>
             </NavLink>
           ))}
         </div>
