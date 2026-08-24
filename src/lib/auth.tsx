@@ -20,8 +20,16 @@
 //   completeSignup(otp)          -> sets `session` (this is when the identity
 //                                    is created and auth succeeds), returns
 //                                    the newly issued ksNumber once
-//   resendSignupOtp()            -> resend the OTP for the pending challenge
+//   resendSignupOtp()            -> resend the OTP for the pending signup challenge
 //   cancelSignup()                -> abandon the pending signup challenge
+//
+// Public creation trial:
+//   A visitor may shape an agreement before signing in. `trialMode` exposes a
+//   deliberately non-authoritative placeholder user ONLY so CreateJourney can
+//   render its question engine. It is not a session, has no KSNumber/token and
+//   must never unlock protected Market routes. When a real backend write is
+//   attempted, securepayClient requests authentication and this trial identity
+//   is removed so CreateJourney's existing inline auth gate takes over in place.
 //
 // Rules:
 //   - No production secrets, internal tokens, or provider credentials.
@@ -29,8 +37,9 @@
 //   - No localStorage / sessionStorage / cookies for tokens.
 //   - Failed auth surfaces a safe error to the UI; a pending challenge is
 //     never treated as a signed-in session.
+//   - Trial mode is presentation-only and never equivalent to authentication.
 // ═══════════════════════════════════════════════════════════════
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import type {
   SecurePaySession,
   SecurePayUser,
@@ -49,6 +58,13 @@ import {
   securePayIsConfigured,
 } from '../api/securepayAuth';
 import { getAuthBoundaryMetadata } from '../integration/authBoundary';
+import {
+  CREATION_AUTH_COMPLETED_EVENT,
+  CREATION_AUTH_REQUIRED_EVENT,
+  CREATION_TRIAL_ENDED_EVENT,
+  CREATION_TRIAL_STARTED_EVENT,
+  loadCreationIntent,
+} from './creationIntent';
 
 export interface CompleteSignupResult {
   error: string | null;
@@ -91,14 +107,36 @@ const Ctx = createContext<AuthCtx>({
   signOut: async () => {},
 });
 
+function initialCreationTrialMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (!window.location.pathname.startsWith('/create')) return false;
+  return loadCreationIntent() !== null;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<SecurePaySession | null>(null);
   const [challenge, setChallenge] = useState<SecurePayLoginChallenge | null>(null);
   const [signupChallenge, setSignupChallenge] = useState<SecurePaySignupChallenge | null>(null);
+  const [trialMode, setTrialMode] = useState(initialCreationTrialMode);
 
   // Sessions are in-memory only and never persisted — there is nothing to
   // restore on mount, so there is no async "loading" phase.
   const loading = false;
+
+  useEffect(() => {
+    const startTrial = () => setTrialMode(true);
+    const endTrial = () => setTrialMode(false);
+    const requireAuthentication = () => setTrialMode(false);
+
+    window.addEventListener(CREATION_TRIAL_STARTED_EVENT, startTrial);
+    window.addEventListener(CREATION_TRIAL_ENDED_EVENT, endTrial);
+    window.addEventListener(CREATION_AUTH_REQUIRED_EVENT, requireAuthentication);
+    return () => {
+      window.removeEventListener(CREATION_TRIAL_STARTED_EVENT, startTrial);
+      window.removeEventListener(CREATION_TRIAL_ENDED_EVENT, endTrial);
+      window.removeEventListener(CREATION_AUTH_REQUIRED_EVENT, requireAuthentication);
+    };
+  }, []);
 
   const signIn = async (ksNumber: string, password: string): Promise<string | null> => {
     if (!securePayIsConfigured()) {
@@ -119,6 +157,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setSession(result.data);
     setChallenge(null);
+    setTrialMode(false);
+
+    // A creation request may be waiting while the inline auth gate is visible.
+    // Give securepayClient the freshly issued token directly so that exact
+    // request can resume without losing the visitor's completed trial answers.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(CREATION_AUTH_COMPLETED_EVENT, {
+        detail: { accessToken: result.data.accessToken },
+      }));
+    }
     return null;
   };
 
@@ -167,6 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setSession(result.data);
     setSignupChallenge(null);
+    setTrialMode(false);
     return { error: null, ksNumber: result.data.user.ksNumber ?? null };
   };
 
@@ -179,11 +228,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setChallenge(null);
     setSignupChallenge(null);
+    setTrialMode(false);
   };
+
+  const trialUser: SecurePayUser | null = !session && trialMode
+    ? { id: 'securepay-public-trial', displayName: 'Guest trader' }
+    : null;
 
   return (
     <Ctx.Provider value={{
-      session, user: session?.user ?? null, loading, challenge,
+      session, user: session?.user ?? trialUser, loading, challenge,
       signIn, completeSignIn, resendChallenge, cancelChallenge,
       signupChallenge, startSignup, resendSignupOtp, completeSignup, cancelSignup,
       signOut,
