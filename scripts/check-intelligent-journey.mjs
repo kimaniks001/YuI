@@ -108,6 +108,9 @@ if (!myMarket.includes('SecurePay is with the agreement')) {
 if (!publicHome.includes('saveCreationIntent(displayIntent)') || !publicHome.includes("'/create/journey'")) {
   fail('signed-out Home no longer preserves typed intent into the creation journey');
 }
+if (!publicHome.includes('handleIntentKeyDown') || !publicHome.includes("event.key === 'Enter' && !event.shiftKey")) {
+  fail('signed-out Home no longer supports Enter-to-continue from the typing space');
+}
 if (!createJourney.includes('InlineAuthGate') || !createJourney.includes('loadCreationIntent()')) {
   fail('signed-out creation no longer preserves intent through the sign-in boundary');
 }
@@ -122,6 +125,9 @@ if (!myMarket.includes('<textarea') || !myMarket.includes('agreementDraft')) {
 }
 if (!myMarket.includes('market-start-prompt-input') || !myMarket.includes('placeholder="What would you like to agree next?"')) {
   fail('signed-in Market typing control is not visibly presented as the agreement entry surface');
+}
+if (!myMarket.includes("event.key === 'Enter' && !event.shiftKey")) {
+  fail('signed-in Market no longer supports Enter-to-continue from the typing space');
 }
 if (myMarket.includes("dispatchEvent(new Event('open-ask-securepay'))")) {
   fail('signed-in Market agreement entry still opens the Ask SecurePay overlay instead of accepting typed intent');
