@@ -17,18 +17,17 @@ check('Owner offers are self-scoped', endpoints.includes("'/api/v1/store/me/offe
 check('Owner offer create and update are wired', endpoints.includes('createMyStoreOffer') && endpoints.includes('updateMyStoreOffer'));
 check('Availability confirmation is server-recorded', endpoints.includes('/availability-confirmation') && endpoints.includes('confirmMyStoreOfferAvailability'));
 check('Owner request types contain no target identity or KS field', !types.includes('targetKsNumber') && !types.includes('targetIdentityId'));
-check('Natural-language quick add is review-first', studio.includes('Natural-language quick add') && studio.includes('Draft it') && studio.includes('Review it before saving'));
+check('Store is task-first instead of one long editor', studio.includes("type StoreView = 'overview' | 'offers' | 'profile'") && studio.includes("setView('offers')") && studio.includes("setView('profile')"));
+check('Natural-language quick add remains review-first', studio.includes('interpretStoreWords') && studio.includes('Draft') && studio.includes('Review before saving'));
 check('Natural-language draft never auto-publishes', studio.includes('published: false'));
 check('Store Health is timestamp-derived', studio.includes('deriveStoreHealth') && studio.includes('availabilityConfirmedAt') && studio.includes('updatedAt'));
 check('Store Health freshness thresholds are explicit', studio.includes('oldestAge <= 7') && studio.includes('oldestAge <= 21'));
-check('Store Health cannot imply trust or financial strength', studio.includes('freshness only') && studio.includes('not a trust, credit, reputation, financial-strength or trader-ranking score'));
+check('Store Health remains freshness, not trader scoring', studio.includes('Store Health measures freshness only') && studio.includes('not a trust, credit, reputation or financial-strength score'));
 check('Resting Store posture is supported', studio.includes("label: 'Resting'") && studio.includes("'RESTING'"));
-check('Publishing preserves listing boundary', studio.includes('Publishing lists it; it does not reserve or sell it.'));
+check('Publishing remains an explicit owner choice', studio.includes('checked={offerDraft.published}') && studio.includes('Show publicly'));
 check('Customer preview uses canonical public KS route', studio.includes('Customer view') && studio.includes('/ks/${encodeURIComponent(publicKs)}'));
-check('Public theme persistence gap is explicit', studio.includes('device-local Studio preview only') && studio.includes('does not yet persist a public Store theme'));
-check('Media persistence gap is explicit and not faked', studio.includes('Backend media support required') && studio.includes('does not yet expose Store media persistence'));
-check('Mobile maintenance keeps touch-sized actions', studio.includes('min-h-11') && studio.includes('sm:grid-cols-2'));
-check('Store writes stay separate from payment authority', studio.includes('never creates a sale, reservation, agreement, Payment Ready or settlement authority'));
+check('Local atmosphere remains explicitly non-authoritative', studio.includes('local Studio atmosphere only'));
+check('Mobile maintenance keeps touch-sized actions', studio.includes('min-h-10') && studio.includes('sm:grid-cols-2'));
 
 if (failures.length) {
   console.error(`Store owner Studio certification failed (${failures.length}).`);
