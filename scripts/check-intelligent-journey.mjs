@@ -18,6 +18,7 @@ const traderHeader = read('src/components/trader/TraderPageHeader.tsx');
 const myMarket = read('src/pages/MyMarket.tsx');
 const signedInHome = read('src/pages/SecurePayHome.tsx');
 const comingUp = read('src/components/trader/TraderComingUp.tsx');
+const planning = read('src/lib/traderPlanning.ts');
 const traderHomeCss = read('src/trader-home.css');
 const floatingAssistant = read('src/components/FloatingAssistant.tsx');
 const publicHome = read('src/pages/Home.tsx');
@@ -231,10 +232,13 @@ for (const removedCopy of [
 
 // The planning strip may show only backend-returned agreement deadlines/actions.
 // A day with no such records is never called globally free or available.
-for (const required of ['agreement.nextActions', 'agreement.nextDeadline', 'Agreement dates only', 'No SecurePay agreement commitments are recorded for this day.', 'Plan on this day']) {
-  if (!comingUp.includes(required)) fail(`Coming up planner is missing truthful planning behaviour: ${required}`);
+for (const required of ['agreement.nextActions', 'agreement.nextDeadline', 'collectTraderPlannerEvents', 'buildTraderPlanningWeek']) {
+  if (!planning.includes(required)) fail(`planning projection is missing backend-derived behaviour: ${required}`);
 }
-if (comingUp.includes('You are free') || comingUp.includes('Available all day')) {
+for (const required of ['Agreement dates only', 'No SecurePay agreement commitments are recorded for this day.', 'Plan on this day']) {
+  if (!comingUp.includes(required)) fail(`Coming up UI is missing truthful planning language: ${required}`);
+}
+if (comingUp.includes('You are free') || comingUp.includes('Available all day') || planning.includes('You are free')) {
   fail('Coming up planner is claiming availability that SecurePay cannot prove');
 }
 if (!traderHomeCss.includes('@media(max-width:760px)') || !traderHomeCss.includes('trader-home-around-rail') || !traderHomeCss.includes('trader-coming-up-days')) {
