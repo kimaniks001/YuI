@@ -18,6 +18,8 @@
 //   - "I am paying" in the statement deterministically sets
 //     creatorIsLikelyPayer=true, but this is a hypothesis the user
 //     may still confirm or correct — not a backend assignment.
+//   - A saved intent may open the public trial journey. Trial mode is
+//     never authentication and can never unlock protected Market routes.
 // ═══════════════════════════════════════════════════════════════
 
 export type IntentFamily = 'trade' | 'life';
@@ -48,6 +50,15 @@ export interface CreationIntent {
 }
 
 const STORAGE_KEY = 'securepay_creation_intent';
+export const CREATION_TRIAL_STARTED_EVENT = 'securepay-creation-trial-started';
+export const CREATION_TRIAL_ENDED_EVENT = 'securepay-creation-trial-ended';
+export const CREATION_AUTH_REQUIRED_EVENT = 'securepay-creation-auth-required';
+export const CREATION_AUTH_COMPLETED_EVENT = 'securepay-creation-auth-completed';
+
+function emit(name: string): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(name));
+}
 
 export function saveCreationIntent(intent: CreationIntent): void {
   try {
@@ -56,6 +67,12 @@ export function saveCreationIntent(intent: CreationIntent): void {
     // sessionStorage may be unavailable (private mode, disabled) —
     // the router-state path still works without it.
   }
+
+  // The signed-out Home is intentionally a try-before-sign-in surface.
+  // Emitting this event lets AuthProvider expose a non-authoritative trial
+  // identity only to the creation journey so the visitor can experience
+  // SecurePay's agreement intelligence before authentication.
+  emit(CREATION_TRIAL_STARTED_EVENT);
 }
 
 export function loadCreationIntent(): CreationIntent | null {
@@ -76,6 +93,7 @@ export function clearCreationIntent(): void {
   } catch {
     // no-op
   }
+  emit(CREATION_TRIAL_ENDED_EVENT);
 }
 
 /**
