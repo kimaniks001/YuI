@@ -106,7 +106,7 @@ export function CreationBottomAction({
 
 function encouragementFor(current: number, total: number) {
   const ratio = total > 0 ? Math.max(0, Math.min(1, current / total)) : 0;
-  if (ratio < 0.25) return {
+  if (current <= 1 && total > 1) return {
     title: 'This is what I get right now.',
     body: 'I’ll carry what you said forward. I only need a few more answers so we can lock in a clear agreement before anything is created.',
   };
@@ -114,7 +114,7 @@ function encouragementFor(current: number, total: number) {
     title: 'I’m carrying your answers forward.',
     body: 'We are building the agreement one clear detail at a time. You do not need to repeat what you already told SecurePay.',
   };
-  if (ratio < 0.9) return {
+  if (current < total) return {
     title: 'We’re nearly ready to check the whole agreement.',
     body: 'A few final details remain. You can still go back and change any answer before anything is created.',
   };
@@ -155,12 +155,14 @@ export function CreationShell({
 }) {
   const encouragement = encouragementFor(current, total);
   const ratio = total > 0 ? Math.max(0, Math.min(1, current / total)) : 0;
-  const resolvedState = markState ?? (ratio < .18 ? 'listening' : 'guiding');
+  const isOpeningStep = current <= 1 && total > 1;
+  const isFinalStep = total > 0 && current >= total;
+  const resolvedState = markState ?? (isOpeningStep ? 'listening' : 'guiding');
   const phaseLabel = resolvedState === 'caution'
     ? 'Needs a check'
-    : ratio < .25
+    : isOpeningStep
       ? 'What I heard'
-      : ratio >= .9
+      : isFinalStep
         ? 'Final check'
         : 'Shaping the agreement';
 
@@ -168,8 +170,8 @@ export function CreationShell({
   // Reading it here is for conversational continuity only; it never grants
   // payer, participant, funding, release, settlement or other backend authority.
   const rememberedIntent = loadCreationIntent();
-  const showOpeningEcho = ratio < .25 && Boolean(rememberedIntent?.statement?.trim());
-  const showFinalEcho = ratio >= .9 && Boolean(rememberedIntent?.statement?.trim());
+  const showOpeningEcho = isOpeningStep && Boolean(rememberedIntent?.statement?.trim());
+  const showFinalEcho = isFinalStep && Boolean(rememberedIntent?.statement?.trim());
 
   return (
     <div className="journey-room-shell min-h-screen bg-[#fffdf8] flex flex-col">
@@ -233,7 +235,7 @@ export function CreationShell({
 
           <div className="journey-safety-line">
             <LivingSecurePayMark state="resting" size="xs" presence="polite" label="SecurePay safety reminder" />
-            <span>{ratio >= .9 ? 'Nothing is created until you confirm the final agreement below.' : 'Answering these questions does not move money. We are only shaping the agreement.'}</span>
+            <span>{isFinalStep ? 'Nothing is created until you confirm the final agreement below.' : 'Answering these questions does not move money. We are only shaping the agreement.'}</span>
           </div>
 
           {showMemory && memoryWhat && memoryAmount && memoryWho && onMemoryToggle && (
@@ -247,7 +249,7 @@ export function CreationShell({
           )}
 
           <div className="journey-question-room" data-journey-state={resolvedState}>
-            <div className="journey-change-note"><LivingSecurePayMark state="resting" size="xs" presence="polite" decorative /><span>{ratio >= .9 ? 'Is this correct? Go back if you need to change anything.' : 'You can change an answer before you create the agreement.'}</span></div>
+            <div className="journey-change-note"><LivingSecurePayMark state="resting" size="xs" presence="polite" decorative /><span>{isFinalStep ? 'Is this correct? Go back if you need to change anything.' : 'You can change an answer before you create the agreement.'}</span></div>
             {children}
           </div>
         </div>
