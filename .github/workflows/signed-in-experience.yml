@@ -4,8 +4,8 @@ on:
   pull_request:
     paths:
       - 'src/**'
-      - 'scripts/check-signed-in-experience.mjs'
-      - 'scripts/check-intelligent-journey.mjs'
+      - 'scripts/**'
+      - 'docs/market-world/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/signed-in-experience.yml'
@@ -24,6 +24,20 @@ jobs:
         run: npm run check:signed-in-experience
       - name: Intelligent journey guard
         run: npm run check:intelligent-journey
+      - name: Store owner guard
+        run: npm run check:store-owner
+      - name: Store sharing guard
+        run: npm run check:store-share
+      - name: Plug / Builder guard
+        run: npm run check:plug
+      - name: Community privacy guard
+        run: npm run check:community
+      - name: Circle guard
+        run: npm run check:circle
+      - name: Opportunity guard
+        run: npm run check:opportunity
+      - name: Master guard
+        run: npm run check:master
       - name: TypeScript
         run: npm run typecheck
       - name: Production build
