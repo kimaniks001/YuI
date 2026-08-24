@@ -112,7 +112,7 @@ export default function StoreOwnerStudio() {
   const health = useMemo(() => deriveStoreHealth(profile, offers), [profile, offers]);
   if (!user || !session) return <Navigate to="/signin" replace />;
 
-  const publicKs = user.ksNumber?.trim().toUpperCase();
+  const publicKs = user.ksNumber?.trim().toUpperCase() || '';
   const publicAddress = publicKs ? `securepay.ke/${publicKs}` : null;
   const publishedCount = offers.filter(offer => offer.published).length;
   const states = offerDraft.kind === 'PRODUCT' ? PRODUCT_STATES : SERVICE_STATES;
