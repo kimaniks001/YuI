@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { BadgeCheck, Check, Copy, Eye, EyeOff, FileCheck2, Link2, Mail, Phone, Store } from 'lucide-react';
+import { Check, Copy, Eye, EyeOff, FileCheck2, Link2, Mail, Phone, Store } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import type { SecurePaySignupChannelType } from '../api/securepayTypes';
 import { FormPage, Stepper, Input, PrimaryButton, GhostButton, Alert, GreenCard, HelperText } from '../components/ds';
