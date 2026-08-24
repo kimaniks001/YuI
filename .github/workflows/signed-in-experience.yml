@@ -1,0 +1,30 @@
+name: Signed-in Experience
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'scripts/check-signed-in-experience.mjs'
+      - 'scripts/check-intelligent-journey.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/signed-in-experience.yml'
+
+jobs:
+  signed-in-experience:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: SecurePay-wide signed-in guard
+        run: npm run check:signed-in-experience
+      - name: Intelligent journey guard
+        run: npm run check:intelligent-journey
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
