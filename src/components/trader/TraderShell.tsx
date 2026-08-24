@@ -6,6 +6,7 @@ import { useAuth } from '../../lib/auth';
 import EnvironmentBadge from './EnvironmentBadge';
 import '../../r14-accessibility.css';
 import '../../trader-public-continuity.css';
+import '../../trader-system-wide.css';
 
 const navigation = [
   { to: '/dashboard', label: 'Home', mobileLabel: 'Home', icon: Home },
@@ -18,6 +19,7 @@ export default function TraderShell({ children, actionCount = 0 }: { children: R
   const { user, signOut } = useAuth();
   const [accountOpen, setAccountOpen] = useState(false);
   const identity = user?.displayName?.trim() || user?.ksNumber || 'Account';
+  const ksNumber = user?.ksNumber?.trim() || null;
 
   useEffect(() => {
     if (!accountOpen) return;
@@ -29,7 +31,7 @@ export default function TraderShell({ children, actionCount = 0 }: { children: R
   }, [accountOpen]);
 
   return (
-    <div className="hp-page trader-public-shell">
+    <div className="hp-page trader-public-shell trader-system-wide">
       <a href="#trader-main" className="sp-skip-link">Skip to main content</a>
 
       <div className="hp-atmosphere" aria-hidden="true">
@@ -73,21 +75,22 @@ export default function TraderShell({ children, actionCount = 0 }: { children: R
           <div className="relative">
             <button
               type="button"
-              aria-label="Account menu"
+              aria-label={ksNumber ? `Account menu, ${ksNumber}` : 'Account menu'}
               aria-expanded={accountOpen}
               aria-controls="trader-account-menu"
               onClick={() => setAccountOpen(open => !open)}
               className="trader-account-button focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2"
             >
               <span className="trader-account-avatar" aria-hidden="true">{identity.slice(0, 2).toUpperCase()}</span>
-              <span className="trader-account-name hidden max-w-32 truncate text-sm font-semibold lg:block">{identity}</span>
+              {ksNumber && <span className="trader-account-ks font-mono">{ksNumber}</span>}
+              <span className="trader-account-name hidden max-w-32 truncate text-sm font-semibold xl:block">{identity}</span>
             </button>
             {accountOpen && (
               <div id="trader-account-menu" aria-label="Account options" className="absolute right-0 top-[calc(100%+8px)] z-[70] w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-green-700/10 bg-[#fffefb] p-2 shadow-xl">
                 <div className="border-b border-green-700/10 px-3 py-2">
                   <p className="text-xs text-ink/40">Signed in as</p>
                   <p className="mt-0.5 truncate text-sm font-semibold">{identity}</p>
-                  {user?.ksNumber && <p className="mt-1 font-mono text-xs font-semibold text-green-800">{user.ksNumber}</p>}
+                  {ksNumber && <p className="mt-1 font-mono text-xs font-semibold text-green-800">{ksNumber}</p>}
                 </div>
                 <Link to="/signin" onClick={() => setAccountOpen(false)} className="mt-1 flex min-h-11 items-center rounded-xl px-3 text-sm hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700">Account</Link>
                 <Link to="/store" onClick={() => setAccountOpen(false)} className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700"><Store size={15} aria-hidden="true" /> My KS Store</Link>
