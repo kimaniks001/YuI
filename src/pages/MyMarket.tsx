@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ArrowRight, Clock3, FileCheck2, Search, ShieldCheck, Sparkles, UsersRound } from 'lucide-react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import TraderShell from '../components/trader/TraderShell';
 import TraderPageHeader from '../components/trader/TraderPageHeader';
 import { TraderEmptyState, TraderErrorState, TraderLoadingState, TraderUnavailableState } from '../components/trader/TraderStates';
@@ -9,15 +9,14 @@ import type { SecurePayMarketIdentity } from '../api/r13MarketTypes';
 import { useAuth } from '../lib/auth';
 import { useTraderWorkspace } from '../lib/useTraderWorkspace';
 import { buildMarketProjection, type MarketItem } from '../lib/marketProjection';
-
-function openAgreementPrompt() {
-  window.dispatchEvent(new Event('open-ask-securepay'));
-}
+import { createCreationIntentFromText, saveCreationIntent } from '../lib/creationIntent';
 
 export default function MyMarket() {
   const { user, session } = useAuth();
+  const navigate = useNavigate();
   const { state, agreements, activity, activityAvailable, retry } = useTraderWorkspace();
   const [query, setQuery] = useState('');
+  const [agreementDraft, setAgreementDraft] = useState('');
   const [identities, setIdentities] = useState<SecurePayMarketIdentity[] | null>(null);
   const [identitiesAvailable, setIdentitiesAvailable] = useState(true);
 
@@ -46,6 +45,14 @@ export default function MyMarket() {
       .filter(Boolean)
       .some(value => String(value).toLowerCase().includes(normalizedQuery)))
     : items;
+
+  const startAgreement = () => {
+    const statement = agreementDraft.trim();
+    if (!statement) return;
+    const intent = createCreationIntentFromText(statement);
+    saveCreationIntent(intent);
+    navigate('/create/journey', { state: { intent } });
+  };
 
   if (!user || !session) return <Navigate to="/" replace />;
 
@@ -89,13 +96,41 @@ export default function MyMarket() {
                   : 'Good. There is nothing SecurePay needs you to act on at this moment. You can review what is moving, or start a new agreement.'}
               </p>
 
-              <button type="button" onClick={openAgreementPrompt} className="market-start-prompt" aria-label="Tell SecurePay what you want to do next">
-                <span className="market-start-prompt-copy">
-                  <span className="market-start-prompt-label">What would you like to agree next?</span>
+              <form
+                className="market-start-prompt"
+                aria-label="Start an agreement from your own words"
+                onSubmit={event => {
+                  event.preventDefault();
+                  startAgreement();
+                }}
+              >
+                <div className="market-start-prompt-copy">
+                  <textarea
+                    value={agreementDraft}
+                    onChange={event => setAgreementDraft(event.target.value)}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        startAgreement();
+                      }
+                    }}
+                    rows={2}
+                    maxLength={420}
+                    aria-label="What would you like to agree next?"
+                    placeholder="What would you like to agree next?"
+                    className="market-start-prompt-input"
+                  />
                   <span className="market-start-prompt-help">Buy, sell, hire, get paid, support someone, build or contribute — say it naturally.</span>
-                </span>
-                <span className="market-start-prompt-arrow" aria-hidden="true"><ArrowRight size={22} /></span>
-              </button>
+                </div>
+                <button
+                  type="submit"
+                  disabled={!agreementDraft.trim()}
+                  className="market-start-prompt-arrow"
+                  aria-label="Start this agreement"
+                >
+                  <ArrowRight size={22} />
+                </button>
+              </form>
             </div>
 
             <aside className="market-guide-card" aria-label="SecurePay agreement guide summary">
