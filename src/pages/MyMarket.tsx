@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { ArrowRight, Clock3, FileCheck2, Search, Sparkles, UsersRound } from 'lucide-react';
+import { ArrowRight, Clock3, FileCheck2, Search, ShieldCheck, Sparkles, UsersRound } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import TraderShell from '../components/trader/TraderShell';
 import TraderPageHeader from '../components/trader/TraderPageHeader';
@@ -52,14 +52,14 @@ export default function MyMarket() {
   return (
     <TraderShell>
       <TraderPageHeader
-        eyebrow="Welcome to the Market"
-        title="Everything you trade, in one place."
-        description="See what needs you, what you are waiting for, and what has just happened. Every action still belongs to the exact agreement and KSNumber that SecurePay returned."
+        eyebrow="Welcome to your Market"
+        title={<>Everything you trade, <span className="text-green-700">in one place.</span></>}
+        description={<>See what needs you, what you are waiting for and what has just happened. SecurePay keeps each action attached to the exact agreement and KSNumber that returned it.</>}
         aside={currentKsNumber ? (
-          <div className="min-w-[220px] rounded-2xl border border-green-700/10 bg-green-50/60 p-4 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-green-700">Acting identity</p>
+          <div className="signed-in-identity-card">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-green-700">You are here as</p>
             <p className="mt-1 font-mono text-base font-bold text-ink/80">{currentKsNumber}</p>
-            <p className="mt-1 text-xs text-ink/45">Exact authenticated KSNumber.</p>
+            <p className="mt-1 text-xs leading-5 text-ink/45">Your authenticated SecurePay identity for this view.</p>
           </div>
         ) : undefined}
       />
@@ -75,26 +75,45 @@ export default function MyMarket() {
 
       {state === 'ready' && (
         <div className="space-y-7">
-          <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">What needs you right now?</p>
-              <h2 className="mt-1 font-display text-3xl text-ink sm:text-4xl">
+          <section className="signed-in-market-hero" aria-labelledby="market-now-heading">
+            <div className="relative z-[1] min-w-0">
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-green-700">What needs you right now?</p>
+              <h2 id="market-now-heading" className="market-now-heading">
                 {market.attention.length > 0
                   ? `${market.attention.length} ${market.attention.length === 1 ? 'agreement needs' : 'agreements need'} your attention.`
                   : 'Nothing urgent needs you right now.'}
               </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-ink/55">
-                SecurePay uses the backend-owned next actions already attached to your agreements. It does not create a second priority system in the browser.
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-ink/55">
+                {market.attention.length > 0
+                  ? 'These are the next actions SecurePay received with your agreements. Open one and we’ll continue from what was actually agreed.'
+                  : 'Good. There is nothing SecurePay needs you to act on at this moment. You can review what is moving, or start a new agreement.'}
               </p>
+
+              <button type="button" onClick={openAgreementPrompt} className="market-start-prompt" aria-label="Tell SecurePay what you want to do next">
+                <span className="market-start-prompt-copy">
+                  <span className="market-start-prompt-label">What would you like to agree next?</span>
+                  <span className="market-start-prompt-help">Buy, sell, hire, get paid, support someone, build or contribute — say it naturally.</span>
+                </span>
+                <span className="market-start-prompt-arrow" aria-hidden="true"><ArrowRight size={22} /></span>
+              </button>
             </div>
-            <button type="button" onClick={openAgreementPrompt} className="sp-btn-primary inline-flex min-h-12 items-center justify-center gap-2 px-5 text-sm">
-              <Sparkles size={16} /> Start something new
-            </button>
+
+            <aside className="market-guide-card" aria-label="SecurePay agreement guide summary">
+              <span className="market-guide-badge"><ShieldCheck size={14} /> SecurePay is with the agreement</span>
+              <h3 className="market-guide-title">Here’s what your agreements are saying today.</h3>
+              <p className="mt-2 text-xs leading-5 text-ink/48">This is a view of backend-returned agreement activity — not a second wallet, priority engine or release authority.</p>
+              <div className="market-guide-stats">
+                <div className="market-guide-stat"><span>Needs you</span><strong>{market.attention.length}</strong></div>
+                <div className="market-guide-stat"><span>Waiting</span><strong>{market.waiting.length}</strong></div>
+                <div className="market-guide-stat"><span>In progress</span><strong>{market.active.length}</strong></div>
+                <div className="market-guide-stat"><span>Recent records</span><strong>{market.completed.length}</strong></div>
+              </div>
+            </aside>
           </section>
 
-          <section className="rounded-2xl border border-ink/8 bg-white p-3 shadow-sm">
-            <label className="flex min-h-12 items-center gap-3 rounded-xl px-3">
-              <Search size={18} className="shrink-0 text-ink/35" />
+          <section className="market-search-card" aria-label="Find something in your Market">
+            <label className="flex min-h-14 items-center gap-3 rounded-xl px-3">
+              <Search size={19} className="shrink-0 text-green-700/45" />
               <input
                 value={query}
                 onChange={event => setQuery(event.target.value)}
@@ -104,57 +123,60 @@ export default function MyMarket() {
             </label>
           </section>
 
-          <MarketSection eyebrow="Needs your attention" title="Do these next" icon={<Sparkles size={18} />} items={filter(market.attention)} empty="No agreement needs an action from you right now." attention />
-          <MarketSection eyebrow="Waiting" title="SecurePay is waiting on someone or something else" icon={<Clock3 size={18} />} items={filter(market.waiting)} empty="Nothing is currently waiting." />
-          {filter(market.active).length > 0 && <MarketSection eyebrow="Active" title="In progress" icon={<UsersRound size={18} />} items={filter(market.active)} empty="No other active agreements." />}
-          <MarketSection eyebrow="Recently completed" title="Your recent records" icon={<FileCheck2 size={18} />} items={filter(market.completed).slice(0, 6)} empty="Completed agreements will stay available here as records." quiet />
+          <MarketSection eyebrow="Needs your attention" title="Do these next" icon={<Sparkles size={19} />} items={filter(market.attention)} empty="No agreement needs an action from you right now." attention />
+          <MarketSection eyebrow="Waiting" title="SecurePay is waiting on someone or something else" icon={<Clock3 size={19} />} items={filter(market.waiting)} empty="Nothing is currently waiting." />
+          {filter(market.active).length > 0 && <MarketSection eyebrow="Active" title="In progress" icon={<UsersRound size={19} />} items={filter(market.active)} empty="No other active agreements." />}
+          <MarketSection eyebrow="Recently completed" title="Your recent records" icon={<FileCheck2 size={19} />} items={filter(market.completed).slice(0, 6)} empty="Completed agreements will stay available here as records." quiet />
 
-          <section className="grid gap-3 sm:grid-cols-3" aria-label="Market records, money flows and opportunities">
-            <Link to="/market/flows" className="group flex items-center gap-4 rounded-2xl border border-green-700/10 bg-white p-4 shadow-sm transition hover:-translate-y-px hover:shadow-md">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Money Flows</p>
-                <p className="mt-1 text-sm text-ink/55">See how the four agreement money shapes fit together without changing your current trade.</p>
+          <section className="grid gap-4 md:grid-cols-3" aria-label="Market records, money flows and opportunities">
+            <Link to="/market/flows" className="market-link-card group">
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-green-700">Money Flows</p>
+                <h2 className="mt-2 font-display text-2xl leading-none">How the agreement moves money</h2>
+                <p className="mt-2 text-sm leading-6 text-ink/52">See how the four agreement money shapes fit together without changing your current trade.</p>
               </div>
-              <ArrowRight size={17} className="shrink-0 text-green-700 transition group-hover:translate-x-0.5" />
+              <ArrowRight size={18} className="text-green-700 transition group-hover:translate-x-1" />
             </Link>
-            <Link to="/opportunities" className="group flex items-center gap-4 rounded-2xl border border-green-700/10 bg-white p-4 shadow-sm transition hover:-translate-y-px hover:shadow-md">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Opportunities</p>
-                <p className="mt-1 text-sm text-ink/55">See what's waiting for you, what you've passed on, and what you've claimed — opportunity is never the same as agreement.</p>
+            <Link to="/opportunities" className="market-link-card is-life group">
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-orange-700">Opportunities</p>
+                <h2 className="mt-2 font-display text-2xl leading-none">What may be worth exploring</h2>
+                <p className="mt-2 text-sm leading-6 text-ink/52">See what is waiting for you, what you passed on and what you claimed. An opportunity is never the same as an agreement.</p>
               </div>
-              <ArrowRight size={17} className="shrink-0 text-green-700 transition group-hover:translate-x-0.5" />
+              <ArrowRight size={18} className="text-orange-700 transition group-hover:translate-x-1" />
             </Link>
-            <Link to="/market/statements" className="group flex items-center gap-4 rounded-2xl border border-green-700/10 bg-white p-4 shadow-sm transition hover:-translate-y-px hover:shadow-md">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Statements</p>
-                <p className="mt-1 text-sm text-ink/55">Open the backend-posted record for an authorised KSNumber without creating a combined wallet.</p>
+            <Link to="/market/statements" className="market-link-card group">
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-green-700">Statements</p>
+                <h2 className="mt-2 font-display text-2xl leading-none">The record behind the activity</h2>
+                <p className="mt-2 text-sm leading-6 text-ink/52">Open the backend-posted record for an authorised KSNumber without creating a combined wallet.</p>
               </div>
-              <ArrowRight size={17} className="shrink-0 text-green-700 transition group-hover:translate-x-0.5" />
+              <ArrowRight size={18} className="text-green-700 transition group-hover:translate-x-1" />
             </Link>
           </section>
 
-          <section className="rounded-2xl border border-ink/8 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="market-activity-heading">
+          <section className="market-section-shell" aria-labelledby="market-activity-heading">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Recent activity</p>
-                <h2 id="market-activity-heading" className="mt-1 font-display text-2xl">What happened</h2>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-green-700">Recent activity</p>
+                <h2 id="market-activity-heading" className="market-section-title">What happened</h2>
               </div>
-              <button type="button" onClick={retry} className="text-sm font-semibold text-green-700">Refresh</button>
+              <button type="button" onClick={retry} className="rounded-full border border-green-700/10 bg-white px-3 py-2 text-xs font-semibold text-green-700">Refresh</button>
             </div>
             {!activityAvailable ? (
               <div className="mt-4"><TraderUnavailableState title="Activity unavailable" detail="SecurePay did not return recent activity, so My Market is not substituting demo transactions." /></div>
             ) : market.recentActivity.length === 0 ? (
               <div className="mt-4"><TraderEmptyState title="No recorded activity yet" detail="Backend-recorded activity will appear here." /></div>
             ) : (
-              <ul className="mt-4 divide-y divide-ink/8">
+              <ul className="mt-4 divide-y divide-green-700/8">
                 {market.recentActivity.map(item => (
-                  <li key={item.id} className="flex items-start justify-between gap-4 py-3">
+                  <li key={item.id} className="flex items-start justify-between gap-4 py-3.5">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-ink/80">{item.description}</p>
                       <p className="mt-0.5 text-xs capitalize text-ink/40">{item.detail}</p>
                     </div>
                     <div className="shrink-0 text-right">
-                      {item.amountDisplay && <p className="text-sm font-semibold tabular-nums text-ink/70">{item.amountDisplay}</p>}
+                      {item.amountDisplay && <p className="text-sm font-semibold tabular-nums text-green-800">{item.amountDisplay}</p>}
                       <time className="text-[11px] text-ink/35">{new Date(item.occurredAt).toLocaleDateString('en-KE')}</time>
                     </div>
                   </li>
@@ -163,23 +185,24 @@ export default function MyMarket() {
             )}
           </section>
 
-          <section className="rounded-2xl border border-green-700/10 bg-green-50/60 p-5 sm:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Your place in the Market</p>
+          <section className="market-section-shell" aria-label="Your SecurePay identities">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-green-700">Your place in the Market</p>
+            <h2 className="market-section-title mt-1">The identities you can see here</h2>
             {!identitiesAvailable ? (
-              <div className="mt-3"><TraderUnavailableState title="Other Market identities are unavailable" detail="SecurePay could not confirm additional viewable KSNumbers. This page will not create one locally." /></div>
+              <div className="mt-4"><TraderUnavailableState title="Other Market identities are unavailable" detail="SecurePay could not confirm additional viewable KSNumbers. This page will not create one locally." /></div>
             ) : !identities ? (
-              <div className="mt-3"><TraderLoadingState /></div>
+              <div className="mt-4"><TraderLoadingState /></div>
             ) : (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {identities.map(identity => (
-                  <span key={identity.ksNumber} className="rounded-full border border-green-700/10 bg-white px-3 py-2 text-xs">
+                  <span key={identity.ksNumber} className={`rounded-full border px-3.5 py-2 text-xs shadow-sm ${identity.current ? 'border-green-700/20 bg-green-50 text-green-900' : 'border-green-700/10 bg-white text-ink/70'}`}>
                     <strong>{identity.displayName || identity.ksNumber}</strong>
                     <span className="ml-2 text-ink/40">{identity.current ? 'Current' : identity.canAct ? 'Can act' : 'View only'}</span>
                   </span>
                 ))}
               </div>
             )}
-            <p className="mt-3 text-xs leading-5 text-ink/45">My Market is a view, not a super-KSNumber. Agreements, money and authority keep their exact backend identity.</p>
+            <p className="mt-4 max-w-3xl text-xs leading-5 text-ink/45">My Market is a view, not a super-KSNumber. Agreements, money and authority keep their exact backend identity.</p>
           </section>
         </div>
       )}
@@ -189,18 +212,18 @@ export default function MyMarket() {
 
 function MarketSection({ eyebrow, title, icon, items, empty, attention = false, quiet = false }: { eyebrow: string; title: string; icon: ReactNode; items: MarketItem[]; empty: string; attention?: boolean; quiet?: boolean }) {
   return (
-    <section aria-label={eyebrow}>
-      <div className="mb-3 flex items-center gap-2">
-        <span className={attention ? 'text-orange-600' : 'text-green-700'}>{icon}</span>
+    <section aria-label={eyebrow} className={`market-section-shell ${attention ? 'is-attention' : ''}`}>
+      <div className="mb-4 flex items-center gap-3">
+        <span className="market-section-icon">{icon}</span>
         <div>
-          <p className={`text-[11px] font-bold uppercase tracking-[0.16em] ${attention ? 'text-orange-700' : 'text-green-700'}`}>{eyebrow}</p>
-          <h2 className="font-display text-2xl">{title}</h2>
+          <p className={`text-[10px] font-extrabold uppercase tracking-[0.16em] ${attention ? 'text-orange-700' : 'text-green-700'}`}>{eyebrow}</p>
+          <h2 className="market-section-title">{title}</h2>
         </div>
       </div>
       {items.length === 0 ? (
-        <div className={`rounded-2xl border p-5 text-sm ${quiet ? 'border-ink/8 bg-white text-ink/45' : 'border-green-700/10 bg-green-50/40 text-ink/55'}`}>{empty}</div>
+        <div className={`rounded-2xl border px-4 py-5 text-sm leading-6 ${quiet ? 'border-ink/8 bg-white/70 text-ink/45' : attention ? 'border-orange-200/60 bg-white/65 text-ink/55' : 'border-green-700/10 bg-white/65 text-ink/55'}`}>{empty}</div>
       ) : (
-        <div className="space-y-2">{items.map(item => <MarketRow key={item.agreementId} item={item} attention={attention} quiet={quiet} />)}</div>
+        <div className="space-y-2.5">{items.map(item => <MarketRow key={item.agreementId} item={item} attention={attention} quiet={quiet} />)}</div>
       )}
     </section>
   );
@@ -209,16 +232,16 @@ function MarketSection({ eyebrow, title, icon, items, empty, attention = false, 
 function MarketRow({ item, attention, quiet }: { item: MarketItem; attention: boolean; quiet: boolean }) {
   const href = item.primaryAction?.href || `/agreements/${encodeURIComponent(item.agreementId)}`;
   return (
-    <Link to={href} className={`group flex min-h-[82px] items-center gap-4 rounded-2xl border px-4 py-3 shadow-sm transition hover:-translate-y-px hover:shadow-md ${attention ? 'border-orange-200 bg-orange-50/45' : quiet ? 'border-ink/8 bg-white' : 'border-green-700/10 bg-white'}`}>
+    <Link to={href} className={`market-row-living group ${attention ? 'is-attention' : ''} ${quiet ? 'opacity-85' : ''}`}>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <h3 className="truncate text-sm font-bold text-ink/85">{item.title}</h3>
-          {item.amountDisplay && <span className="text-xs font-semibold tabular-nums text-ink/50">{item.amountDisplay}</span>}
+          {item.amountDisplay && <span className="text-xs font-semibold tabular-nums text-green-800/70">{item.amountDisplay}</span>}
         </div>
         <p className={`mt-1 text-sm ${attention ? 'font-semibold text-orange-800' : 'text-ink/55'}`}>{item.primaryAction ? `Next: ${item.primaryAction.label}` : item.waitingOn || item.humanStatus}</p>
         <p className="mt-1 truncate text-xs text-ink/35">{[item.counterparty, item.role].filter(Boolean).join(' · ') || item.publicReference}</p>
       </div>
-      <ArrowRight size={18} className="shrink-0 text-green-700 transition group-hover:translate-x-0.5" />
+      <ArrowRight size={18} className={`${attention ? 'text-orange-700' : 'text-green-700'} shrink-0 transition group-hover:translate-x-1`} />
     </Link>
   );
 }
