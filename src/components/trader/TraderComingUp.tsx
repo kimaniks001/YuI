@@ -36,9 +36,10 @@ function collectPlannerEvents(agreements: CurrentUserAgreementSummary[]): Planne
   const events: PlannerEvent[] = [];
 
   for (const agreement of agreements) {
-    const datedActions = agreement.nextActions
-      .map(action => ({ action, deadline: parseDeadline(action.deadline) }))
-      .filter((entry): entry is { action: typeof agreement.nextActions[number]; deadline: Date } => Boolean(entry.deadline));
+    const datedActions = agreement.nextActions.flatMap(action => {
+      const deadline = parseDeadline(action.deadline);
+      return deadline ? [{ action, deadline }] : [];
+    });
 
     if (datedActions.length) {
       for (const { action, deadline } of datedActions) {
