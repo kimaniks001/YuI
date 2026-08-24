@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ArrowRight, CalendarDays, Clock3, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { CurrentUserAgreementSummary } from '../../api/securepayTypes';
+import '../../trader-home.css';
 
 interface PlannerEvent {
   agreementId: string;
