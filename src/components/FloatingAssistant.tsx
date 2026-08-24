@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MessageCircle, X, ArrowRight } from 'lucide-react';
+import { createCreationIntentFromText, saveCreationIntent } from '../lib/creationIntent';
 import '../r15-global.css';
 
 const PLACEHOLDERS = [
@@ -58,10 +59,14 @@ export default function FloatingAssistant() {
   }, [open]);
 
   const go = (text: string) => {
-    if (!text.trim()) return;
+    const statement = text.trim();
+    if (!statement) return;
+
+    const intent = createCreationIntentFromText(statement);
+    saveCreationIntent(intent);
     setInput('');
     setOpen(false);
-    navigate(`/create?q=${encodeURIComponent(text.trim())}`);
+    navigate('/create/journey', { state: { intent } });
   };
 
   return (
