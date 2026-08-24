@@ -99,12 +99,16 @@ export function createCreationIntentFromText(rawStatement: string): CreationInte
     ? `KES ${new Intl.NumberFormat('en-KE', { maximumFractionDigits: 2 }).format(numericAmount)}`
     : 'To be confirmed';
 
-  const family: IntentFamily = /family|mum|mom|mother|school|fees|support|help|welfare|church|neighbour|neighbor/.test(lower)
+  // "life" is about the human context, not the money topology. A wedding vendor
+  // can still be a one-to-one trade while the journey remains appropriately warm;
+  // funeral, medical and family arrangements should not sound like generic commerce.
+  const family: IntentFamily = /family|mum|mom|mother|school|fees|support|help|welfare|church|neighbour|neighbor|funeral|burial|bereavement|memorial|wedding|ruracio|marriage|hospital|medical|medicine|treatment|emergency/.test(lower)
     ? 'life'
     : 'trade';
 
   const subjectPatterns: Array<[RegExp, string]> = [
     [/land|plot|property/, 'Land purchase'],
+    [/fridge|refrigerator/, 'Fridge purchase'],
     [/sofa|couch|seat set/, 'Sofa purchase'],
     [/generator/, 'Generator purchase'],
     [/cement/, 'Cement supply'],
@@ -114,6 +118,9 @@ export function createCreationIntentFromText(rawStatement: string): CreationInte
     [/laptop|computer/, 'Computer'],
     [/furniture/, 'Furniture'],
     [/car|vehicle/, 'Vehicle'],
+    [/funeral|burial|memorial|bereavement/, 'Funeral support'],
+    [/wedding|ruracio|marriage/, 'Wedding arrangement'],
+    [/hospital|medical|medicine|treatment/, 'Medical support'],
     [/paint|painting|painter/, 'Painting work'],
     [/plumb|plumber/, 'Plumbing work'],
     [/build|builder|construction|contractor/, 'Building work'],
@@ -170,7 +177,7 @@ export function createCreationIntentFromText(rawStatement: string): CreationInte
     };
   }
 
-  if (/support|help|family|mum|mom|mother|school|fees|rent|medicine|caregiver/.test(lower)) {
+  if (/support|help|family|mum|mom|mother|school|fees|rent|medicine|caregiver|hospital|medical|treatment|emergency/.test(lower)) {
     return {
       id: 'custom',
       family: 'life',
