@@ -154,7 +154,6 @@ export function CreationShell({
   markState?: 'resting' | 'listening' | 'guiding' | 'caution' | 'review' | 'complete';
 }) {
   const encouragement = encouragementFor(current, total);
-  const ratio = total > 0 ? Math.max(0, Math.min(1, current / total)) : 0;
   const isOpeningStep = current <= 1 && total > 1;
   const isFinalStep = total > 0 && current >= total;
   const resolvedState = markState ?? (isOpeningStep ? 'listening' : 'guiding');
