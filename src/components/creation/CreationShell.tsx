@@ -107,8 +107,8 @@ export function CreationBottomAction({
 function encouragementFor(current: number, total: number) {
   const ratio = total > 0 ? Math.max(0, Math.min(1, current / total)) : 0;
   if (ratio < 0.25) return {
-    title: 'This is what I have so far.',
-    body: 'I’ll carry what you said forward. I only need a few more answers so we can shape the agreement clearly before anything is created.',
+    title: 'This is what I get right now.',
+    body: 'I’ll carry what you said forward. I only need a few more answers so we can lock in a clear agreement before anything is created.',
   };
   if (ratio < 0.7) return {
     title: 'I’m carrying your answers forward.',
@@ -119,8 +119,8 @@ function encouragementFor(current: number, total: number) {
     body: 'A few final details remain. You can still go back and change any answer before anything is created.',
   };
   return {
-    title: 'Here is what I have from everything you told me.',
-    body: 'Read it through once. If it matches what you mean, confirm it below. Nothing is created until you do.',
+    title: 'This is the agreement I have from everything you told me.',
+    body: 'Read it once from top to bottom. If it matches what you mean, confirm it below. Nothing is created until you do.',
   };
 }
 
@@ -195,11 +195,38 @@ export function CreationShell({
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#3a7a1f]">
                 {showFinalEcho ? 'You started by saying' : 'You said'}
               </p>
-              <p className="mt-2 text-sm font-medium leading-6 text-[#1a1a1a]/75">“{rememberedIntent.statement.trim()}”</p>
-              <p className="mt-3 border-t border-[#3a7a1f]/10 pt-3 text-xs leading-5 text-[#1a1a1a]/50">
+              <p className="mt-2 text-[15px] font-medium leading-6 text-[#1a1a1a]/80">“{rememberedIntent.statement.trim()}”</p>
+
+              <div className="mt-4 rounded-xl border border-[#3a7a1f]/10 bg-white/75 px-3.5 py-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#1a1a1a]/40">
+                  {showFinalEcho ? 'What the agreement now says' : 'This is what I get right now'}
+                </p>
+                <dl className="mt-2 divide-y divide-[#1a1a1a]/5 text-sm">
+                  <div className="flex items-start justify-between gap-4 py-2">
+                    <dt className="text-[#1a1a1a]/45">What</dt>
+                    <dd className="text-right font-semibold text-[#1a1a1a]/75">{rememberedIntent.what}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-4 py-2">
+                    <dt className="text-[#1a1a1a]/45">Amount</dt>
+                    <dd className="text-right font-semibold text-[#3a7a1f]">{rememberedIntent.amount}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-4 py-2">
+                    <dt className="text-[#1a1a1a]/45">Who</dt>
+                    <dd className="text-right font-semibold text-[#1a1a1a]/75">{rememberedIntent.who}</dd>
+                  </div>
+                  {rememberedIntent.mustHappen && (
+                    <div className="flex items-start justify-between gap-4 py-2">
+                      <dt className="text-[#1a1a1a]/45">What must happen</dt>
+                      <dd className="max-w-[68%] text-right font-medium text-[#1a1a1a]/65">{rememberedIntent.mustHappen}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+
+              <p className="mt-3 border-t border-[#3a7a1f]/10 pt-3 text-xs leading-5 text-[#1a1a1a]/55">
                 {showFinalEcho
-                  ? 'Now compare that with the full agreement below. If something is not right, go back and change it before creating anything.'
-                  : 'This is my starting understanding. I’ll ask only what is still needed so we can turn it into a clear agreement.'}
+                  ? 'Is this correct? Compare your original words with the full agreement below. If something is wrong, go back and change it before creating anything.'
+                  : 'Now I need to ask you a few more questions so we can lock in the people, responsibilities and conditions. I will keep carrying these details forward.'}
               </p>
             </section>
           )}
