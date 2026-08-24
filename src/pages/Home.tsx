@@ -399,8 +399,16 @@ export default function Home({ reviewMode = false }: HomeProps) {
   };
 
   const goCreate = () => {
+    if (inputTouched && !draftStatement.trim()) return;
     saveCreationIntent(displayIntent);
     navigate(reviewMode ? '/preview/create' : '/create/journey', { state: { intent: displayIntent } });
+  };
+
+  const handleIntentKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      goCreate();
+    }
   };
 
   const popularTrade = expandedTrade ? TRADE_INTENTS : TRADE_INTENTS.slice(0, 4);
@@ -596,14 +604,15 @@ export default function Home({ reviewMode = false }: HomeProps) {
                 value={draftStatement}
                 onFocus={prepareIntentInput}
                 onChange={(event) => { setInputTouched(true); setDraftStatement(event.target.value); }}
+                onKeyDown={handleIntentKeyDown}
                 aria-label="Tell SecurePay what you are trying to do"
                 placeholder="Tell us what you want to do…"
                 rows={2}
                 maxLength={420}
               />
-              <button type="button" onClick={goCreate} aria-label="Continue with this intention"><ArrowRight size={24} /></button>
+              <button type="button" onClick={goCreate} disabled={waitingForWords} aria-label="Continue with this intention"><ArrowRight size={24} /></button>
             </div>
-            <p className="hp-typing-hint">Try something like: buy a sofa, sell my bike, hire a builder, support my family</p>
+            <p className="hp-typing-hint">Press Enter or the arrow to continue. Shift+Enter adds a new line.</p>
             <p className="hp-option-intro">Or choose a popular option to get started</p>
 
             <div className="hp-family-cards">
@@ -650,14 +659,15 @@ export default function Home({ reviewMode = false }: HomeProps) {
               value={draftStatement}
               onFocus={prepareIntentInput}
               onChange={(event) => { setInputTouched(true); setDraftStatement(event.target.value); }}
+              onKeyDown={handleIntentKeyDown}
               aria-label="Tell SecurePay what you are trying to do"
               placeholder="Tell us what you want to do…"
               rows={2}
               maxLength={420}
             />
-            <button type="button" onClick={goCreate} aria-label="Continue with this intention"><ArrowRight size={23} /></button>
+            <button type="button" onClick={goCreate} disabled={waitingForWords} aria-label="Continue with this intention"><ArrowRight size={23} /></button>
           </div>
-          <p className="hp-mobile-example">Try: buy a sofa, hire a fundi, support family, collect for school</p>
+          <p className="hp-mobile-example">Press Enter or the arrow to continue · Shift+Enter for a new line</p>
 
           {mobileLivePreview()}
 
