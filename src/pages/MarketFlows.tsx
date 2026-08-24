@@ -13,8 +13,13 @@ interface FlowCardProps {
   detail: string;
   icon: React.ReactNode;
   actionLabel: string;
-  actionTo: string;
+  actionTo?: string;
+  onAction?: () => void;
   note?: string;
+}
+
+function openAgreementPrompt() {
+  window.dispatchEvent(new Event('open-ask-securepay'));
 }
 
 export default function MarketFlows() {
@@ -50,7 +55,7 @@ export default function MarketFlows() {
           detail="Use a SecureLink to agree the amount, terms and what must happen before money follows the agreement."
           icon={<FileText size={21} aria-hidden="true" />}
           actionLabel="Start a SecureLink"
-          actionTo="/create"
+          onAction={openAgreementPrompt}
         />
         <FlowCard
           direction="Many → one"
@@ -106,7 +111,8 @@ export default function MarketFlows() {
   );
 }
 
-function FlowCard({ direction, name, plain, example, detail, icon, actionLabel, actionTo, note }: FlowCardProps) {
+function FlowCard({ direction, name, plain, example, detail, icon, actionLabel, actionTo, onAction, note }: FlowCardProps) {
+  const actionClass = "mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-green-700";
   return (
     <article className="flex min-h-[300px] flex-col rounded-2xl border border-ink/8 bg-white p-5 shadow-sm sm:p-6">
       <div className="flex items-start justify-between gap-3">
@@ -118,9 +124,15 @@ function FlowCard({ direction, name, plain, example, detail, icon, actionLabel, 
       <p className="mt-2 text-sm font-medium text-ink/75">{example}</p>
       <p className="mt-2 flex-1 text-sm leading-6 text-ink/55">{detail}</p>
       {note && <p className="mt-3 rounded-xl bg-[#f8f5ed] p-3 text-xs leading-5 text-ink/50">{note}</p>}
-      <Link to={actionTo} className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-green-700">
-        {actionLabel} <ArrowRight size={15} aria-hidden="true" />
-      </Link>
+      {onAction ? (
+        <button type="button" onClick={onAction} className={actionClass}>
+          {actionLabel} <ArrowRight size={15} aria-hidden="true" />
+        </button>
+      ) : actionTo ? (
+        <Link to={actionTo} className={actionClass}>
+          {actionLabel} <ArrowRight size={15} aria-hidden="true" />
+        </Link>
+      ) : null}
     </article>
   );
 }

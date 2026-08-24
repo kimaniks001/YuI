@@ -10,6 +10,10 @@ import { useAuth } from '../lib/auth';
 import { useTraderWorkspace } from '../lib/useTraderWorkspace';
 import { buildMarketProjection, type MarketItem } from '../lib/marketProjection';
 
+function openAgreementPrompt() {
+  window.dispatchEvent(new Event('open-ask-securepay'));
+}
+
 export default function MyMarket() {
   const { user, session } = useAuth();
   const { state, agreements, activity, activityAvailable, retry } = useTraderWorkspace();
@@ -83,9 +87,9 @@ export default function MyMarket() {
                 SecurePay uses the backend-owned next actions already attached to your agreements. It does not create a second priority system in the browser.
               </p>
             </div>
-            <Link to="/create/journey" className="sp-btn-primary inline-flex min-h-12 items-center justify-center gap-2 px-5 text-sm">
+            <button type="button" onClick={openAgreementPrompt} className="sp-btn-primary inline-flex min-h-12 items-center justify-center gap-2 px-5 text-sm">
               <Sparkles size={16} /> Start something new
-            </Link>
+            </button>
           </section>
 
           <section className="rounded-2xl border border-ink/8 bg-white p-3 shadow-sm">
@@ -145,7 +149,7 @@ export default function MyMarket() {
               <ul className="mt-4 divide-y divide-ink/8">
                 {market.recentActivity.map(item => (
                   <li key={item.id} className="flex items-start justify-between gap-4 py-3">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-ink/80">{item.description}</p>
                       <p className="mt-0.5 text-xs capitalize text-ink/40">{item.detail}</p>
                     </div>

@@ -3,11 +3,17 @@ import { SECUREPAY_EXPLORER_MODE } from '../lib/explorerMode';
 import { getCurrentWorld, isSimulatedWorldRuntime } from '../lib/worldMode';
 import type { SecurePayApiError, SecurePayResult } from './securepayTypes';
 
-function mapError(err: SecurePayApiError | null, fallback: string): string {
+function mapError(
+  err: SecurePayApiError | null,
+  fallback: string,
+  unauthorizedMessage?: string,
+): string {
   if (!err) return fallback;
   const { status, code } = err;
-  if (status === 401 || code === 'INVALID_OTP' || code === 'WRONG_OTP')
+  if (code === 'INVALID_OTP' || code === 'WRONG_OTP')
     return 'Verification failed. Please check the code and try again.';
+  if (status === 401)
+    return unauthorizedMessage ?? fallback;
   if (status === 410 || code === 'EXPIRED' || code === 'CHALLENGE_EXPIRED')
     return 'This verification has expired. Start again.';
   if (status === 429 || code === 'MAX_ATTEMPTS' || code === 'TOO_MANY_ATTEMPTS')
@@ -28,6 +34,27 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   authHeader?: string;
   skipForbiddenCheck?: boolean;
+  /**
+   * SecurePayAPI deliberately uses generic 401 responses across primary
+   * credentials, OTP verification, and bearer-token checks. Callers may
+   * provide the safe message for the operation instead of making the client
+   * guess which secret or factor failed.
+   */
+  unauthorizedMessage?: string;
+}
+
+function defaultUnauthorizedMessage(path: string): string {
+  if (path === '/api/v1/auth/login') {
+    return 'KS Number or password could not be verified.';
+  }
+  if (
+    path === '/api/v1/auth/complete'
+    || path === '/api/v1/auth/signup/verify'
+    || path === '/api/v1/auth/recovery/verify'
+  ) {
+    return 'Verification failed. Please check the code and try again.';
+  }
+  return 'Your session could not be verified. Please sign in again.';
 }
 
 export async function securePayFetch<T>(
@@ -85,7 +112,11 @@ export async function securePayFetch<T>(
       const body = await res.json().catch(() => ({}));
       return {
         ok: false,
-        error: mapError({ status: res.status, code: body.code, message: body.message }, 'Request failed. Please try again.'),
+        error: mapError(
+          { status: res.status, code: body.code, message: body.message },
+          'Request failed. Please try again.',
+          options.unauthorizedMessage ?? defaultUnauthorizedMessage(path),
+        ),
       };
     }
 

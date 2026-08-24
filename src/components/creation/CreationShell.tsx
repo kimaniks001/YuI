@@ -6,6 +6,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import LivingSecurePayMark from '../LivingSecurePayMark';
+import { loadCreationIntent } from '../../lib/creationIntent';
 import { MemoryBar } from './QuestionComponents';
 
 export function CompactProgress({ current, total }: { current: number; total: number }) {
@@ -73,6 +74,8 @@ export function CreationBottomAction({
   loading?: boolean;
   loadingLabel?: string;
 }) {
+  const visibleNextLabel = nextLabel === 'Create agreement' ? 'Yes, create this agreement' : nextLabel;
+
   return (
     <div className="journey-bottom-action fixed bottom-0 left-0 right-0 z-30 border-t border-[#dfe9d8]/80 bg-white/92 px-4 py-2.5 backdrop-blur-md">
       <div className="mx-auto flex max-w-md items-center gap-3">
@@ -93,7 +96,7 @@ export function CreationBottomAction({
           className="journey-primary-action flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#3a7a1f] py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#2d6018] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {loading ? <Loader2 size={15} className="animate-spin" /> : null}
-          {loading ? loadingLabel : nextLabel}
+          {loading ? loadingLabel : visibleNextLabel}
           {!loading && <ArrowRight size={16} />}
         </button>
       </div>
@@ -103,17 +106,21 @@ export function CreationBottomAction({
 
 function encouragementFor(current: number, total: number) {
   const ratio = total > 0 ? Math.max(0, Math.min(1, current / total)) : 0;
-  if (ratio < 0.25) return {
-    title: 'Good start — we already have the thread.',
-    body: 'There is no perfect answer. Use your normal words and SecurePay will help make the agreement clearer.',
+  if (current <= 1 && total > 1) return {
+    title: 'This is what I get right now.',
+    body: 'I’ll carry what you said forward. I only need a few more answers so we can lock in a clear agreement before anything is created.',
   };
   if (ratio < 0.7) return {
-    title: 'You’re doing well. Keep going one clear choice at a time.',
-    body: 'SecurePay is carrying forward what you already told us, so you do not have to start over on every screen.',
+    title: 'I’m carrying your answers forward.',
+    body: 'We are building the agreement one clear detail at a time. You do not need to repeat what you already told SecurePay.',
+  };
+  if (current < total) return {
+    title: 'We’re nearly ready to check the whole agreement.',
+    body: 'A few final details remain. You can still go back and change any answer before anything is created.',
   };
   return {
-    title: 'Almost there — the important parts are taking shape.',
-    body: 'You can still go back and change an answer before you create the agreement.',
+    title: 'This is the agreement I have from everything you told me.',
+    body: 'Read it once from top to bottom. If it matches what you mean, confirm it below. Nothing is created until you do.',
   };
 }
 
@@ -147,9 +154,23 @@ export function CreationShell({
   markState?: 'resting' | 'listening' | 'guiding' | 'caution' | 'review' | 'complete';
 }) {
   const encouragement = encouragementFor(current, total);
-  const ratio = total > 0 ? Math.max(0, Math.min(1, current / total)) : 0;
-  const resolvedState = markState ?? (ratio < .18 ? 'listening' : 'guiding');
-  const phaseLabel = resolvedState === 'listening' ? 'Understanding' : resolvedState === 'caution' ? 'Needs a check' : ratio > .82 ? 'Ready to review' : 'Shaping the agreement';
+  const isOpeningStep = current <= 1 && total > 1;
+  const isFinalStep = total > 0 && current >= total;
+  const resolvedState = markState ?? (isOpeningStep ? 'listening' : 'guiding');
+  const phaseLabel = resolvedState === 'caution'
+    ? 'Needs a check'
+    : isOpeningStep
+      ? 'What I heard'
+      : isFinalStep
+        ? 'Final check'
+        : 'Shaping the agreement';
+
+  // Creation intent contains only proposed, human-entered journey context.
+  // Reading it here is for conversational continuity only; it never grants
+  // payer, participant, funding, release, settlement or other backend authority.
+  const rememberedIntent = loadCreationIntent();
+  const showOpeningEcho = isOpeningStep && Boolean(rememberedIntent?.statement?.trim());
+  const showFinalEcho = isFinalStep && Boolean(rememberedIntent?.statement?.trim());
 
   return (
     <div className="journey-room-shell min-h-screen bg-[#fffdf8] flex flex-col">
@@ -170,9 +191,50 @@ export function CreationShell({
             </div>
           </div>
 
+          {(showOpeningEcho || showFinalEcho) && rememberedIntent && (
+            <section className="rounded-2xl border border-[#3a7a1f]/12 bg-[#f4f8ef] p-4 shadow-sm" aria-label={showFinalEcho ? 'Original agreement request' : 'What you told SecurePay'}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#3a7a1f]">
+                {showFinalEcho ? 'You started by saying' : 'You said'}
+              </p>
+              <p className="mt-2 text-[15px] font-medium leading-6 text-[#1a1a1a]/80">“{rememberedIntent.statement.trim()}”</p>
+
+              <div className="mt-4 rounded-xl border border-[#3a7a1f]/10 bg-white/75 px-3.5 py-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#1a1a1a]/40">
+                  {showFinalEcho ? 'What the agreement now says' : 'This is what I get right now'}
+                </p>
+                <dl className="mt-2 divide-y divide-[#1a1a1a]/5 text-sm">
+                  <div className="flex items-start justify-between gap-4 py-2">
+                    <dt className="text-[#1a1a1a]/45">What</dt>
+                    <dd className="text-right font-semibold text-[#1a1a1a]/75">{rememberedIntent.what}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-4 py-2">
+                    <dt className="text-[#1a1a1a]/45">Amount</dt>
+                    <dd className="text-right font-semibold text-[#3a7a1f]">{rememberedIntent.amount}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-4 py-2">
+                    <dt className="text-[#1a1a1a]/45">Who</dt>
+                    <dd className="text-right font-semibold text-[#1a1a1a]/75">{rememberedIntent.who}</dd>
+                  </div>
+                  {rememberedIntent.mustHappen && (
+                    <div className="flex items-start justify-between gap-4 py-2">
+                      <dt className="text-[#1a1a1a]/45">What must happen</dt>
+                      <dd className="max-w-[68%] text-right font-medium text-[#1a1a1a]/65">{rememberedIntent.mustHappen}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+
+              <p className="mt-3 border-t border-[#3a7a1f]/10 pt-3 text-xs leading-5 text-[#1a1a1a]/55">
+                {showFinalEcho
+                  ? 'Is this correct? Compare your original words with the full agreement below. If something is wrong, go back and change it before creating anything.'
+                  : 'Now I need to ask you a few more questions so we can lock in the people, responsibilities and conditions. I will keep carrying these details forward.'}
+              </p>
+            </section>
+          )}
+
           <div className="journey-safety-line">
             <LivingSecurePayMark state="resting" size="xs" presence="polite" label="SecurePay safety reminder" />
-            <span>Answering these questions does not move money. We are only shaping the agreement.</span>
+            <span>{isFinalStep ? 'Nothing is created until you confirm the final agreement below.' : 'Answering these questions does not move money. We are only shaping the agreement.'}</span>
           </div>
 
           {showMemory && memoryWhat && memoryAmount && memoryWho && onMemoryToggle && (
@@ -186,7 +248,7 @@ export function CreationShell({
           )}
 
           <div className="journey-question-room" data-journey-state={resolvedState}>
-            <div className="journey-change-note"><LivingSecurePayMark state="resting" size="xs" presence="polite" decorative /><span>You can change an answer before you create the agreement.</span></div>
+            <div className="journey-change-note"><LivingSecurePayMark state="resting" size="xs" presence="polite" decorative /><span>{isFinalStep ? 'Is this correct? Go back if you need to change anything.' : 'You can change an answer before you create the agreement.'}</span></div>
             {children}
           </div>
         </div>

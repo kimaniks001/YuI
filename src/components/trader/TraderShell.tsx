@@ -13,6 +13,10 @@ const navigation = [
   { to: '/actions', label: 'Action Centre', mobileLabel: 'Actions', icon: ListChecks },
 ];
 
+function openAgreementPrompt() {
+  window.dispatchEvent(new Event('open-ask-securepay'));
+}
+
 export default function TraderShell({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
   const [accountOpen, setAccountOpen] = useState(false);
@@ -51,9 +55,9 @@ export default function TraderShell({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <EnvironmentBadge />
-            <Link to="/create" aria-label="Start an agreement" className="sp-btn-primary inline-flex min-h-11 min-w-11 items-center gap-2 px-3 text-sm sm:px-5">
+            <button type="button" onClick={openAgreementPrompt} aria-label="Start an agreement" className="sp-btn-primary inline-flex min-h-11 min-w-11 items-center gap-2 px-3 text-sm sm:px-5">
               <Zap size={15} aria-hidden="true" /> <span className="hidden sm:inline">Create a SecureLink</span>
-            </Link>
+            </button>
             <button type="button" aria-label="Notifications unavailable" disabled className="hidden min-h-11 min-w-11 items-center justify-center rounded-full text-ink/35 lg:inline-flex">
               <Bell size={19} aria-hidden="true" />
             </button>
