@@ -78,8 +78,6 @@ if (!intent.includes('funeral|burial|bereavement')) {
   fail('sensitive life contexts are not recognised by intent parsing');
 }
 
-// The signed-out Home is the visual master. Signed-in trader rooms must keep
-// the same official logo, atmosphere, editorial hierarchy and agreement-first CTA.
 if (!traderShell.includes('SecurePayLogo')) {
   fail('signed-in trader shell is not using the official SecurePay logo');
 }
@@ -102,9 +100,6 @@ if (!myMarket.includes('SecurePay is with the agreement')) {
   fail('My Market is missing the living agreement-guide panel');
 }
 
-// Agreement entry is one behaviour before and after authentication.
-// Public Home preserves the words before entering CreateJourney; CreateJourney
-// owns the sign-in gate; signed-in My Market must use the same CreationIntent contract.
 if (!publicHome.includes('saveCreationIntent(displayIntent)') || !publicHome.includes("'/create/journey'")) {
   fail('signed-out Home no longer preserves typed intent into the creation journey');
 }
