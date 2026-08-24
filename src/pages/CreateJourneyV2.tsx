@@ -6,14 +6,11 @@ import {
   ArrowRight,
   Banknote,
   CalendarDays,
-  Check,
   CheckCircle2,
   ClipboardCheck,
   Eye,
   EyeOff,
-  FileCheck2,
   LockKeyhole,
-  MessageSquareText,
   Plus,
   ShieldCheck,
   Trash2,
@@ -29,7 +26,6 @@ import {
 import {
   agreementQuality,
   buildAgreementBlueprint,
-  formatAmountFromMinor,
   parseKenyanAmountMinor,
   serializeAgreementDescription,
   type AgreementBlueprint,
@@ -595,6 +591,8 @@ export default function CreateJourneyV2({ previewMode = false }: CreateJourneyV2
             </p>
             {created.publicReference && <div className="mt-5 rounded-2xl bg-[#f7f8f4] px-4 py-3"><span className="block text-[10px] font-bold uppercase tracking-wider text-[#1a1a1a]/40">Agreement reference</span><strong className="mt-1 block text-[#173d27]">{created.publicReference}</strong></div>}
             {!created.preview && blueprint.stages.length > 0 && <p className="mt-4 text-sm text-[#1a1a1a]/60">{created.milestonesSaved} of {blueprint.stages.length} stage{blueprint.stages.length === 1 ? '' : 's'} attached as backend milestones.</p>}
+            {!created.preview && created.groupStructureCreated && <p className="mt-2 text-sm text-[#1a1a1a]/60">The backend group contribution structure was created for this agreement.</p>}
+            {!created.preview && created.distributionPlanCreated && <p className="mt-2 text-sm text-[#1a1a1a]/60">The proposed recipient allocations were submitted to a backend distribution plan. This is not funding or Payment Ready.</p>}
             {created.warnings.length > 0 && <div className="mt-5 space-y-2">{created.warnings.map((warning) => <Notice key={warning} tone="amber">{warning}</Notice>)}</div>}
             <div className="mt-6 flex flex-wrap gap-3">
               {!created.preview && created.agreementId && <Link to={`/agreements/${created.agreementId}`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#173d27] px-5 text-sm font-semibold text-white">Open agreement <ArrowRight size={15} /></Link>}
