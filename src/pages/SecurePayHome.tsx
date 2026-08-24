@@ -21,11 +21,12 @@ import type { CircleProfileResponse, ReferralHistoryResponse } from '../api/r11T
 import type { CurrentUserAgreementSummary } from '../api/securepayTypes';
 import TraderShell from '../components/trader/TraderShell';
 import TraderAgreementCard from '../components/trader/TraderAgreementCard';
-import TraderComingUp, { countComingUpThisWeek } from '../components/trader/TraderComingUp';
+import TraderComingUp from '../components/trader/TraderComingUp';
 import { TraderLoadingState } from '../components/trader/TraderStates';
 import { createCreationIntentFromText, saveCreationIntent } from '../lib/creationIntent';
 import { agreementStatusLabel } from '../lib/agreementStateLanguage';
 import { formatDecimalMinorMoney } from '../lib/formatMinorMoney';
+import { countComingUpThisWeek } from '../lib/traderPlanning';
 
 function greeting(name?: string | null): string {
   const hour = new Date().getHours();
