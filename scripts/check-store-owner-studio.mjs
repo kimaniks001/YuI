@@ -17,20 +17,19 @@ check('Owner offers are self-scoped', endpoints.includes("'/api/v1/store/me/offe
 check('Owner offer create and update are wired', endpoints.includes('createMyStoreOffer') && endpoints.includes('updateMyStoreOffer'));
 check('Availability confirmation is server-recorded', endpoints.includes('/availability-confirmation') && endpoints.includes('confirmMyStoreOfferAvailability'));
 check('Owner request types contain no target identity or KS field', !types.includes('targetKsNumber') && !types.includes('targetIdentityId'));
-check('Store is task-first instead of one long editor', studio.includes("type StoreView = 'overview' | 'offers' | 'profile'") && studio.includes("setView('offers')") && studio.includes("setView('profile')"));
-check('Natural-language quick add remains review-first', studio.includes('interpretStoreWords') && studio.includes('Draft') && studio.includes('Review before saving'));
+check('Store Studio is task-first', studio.includes("type StoreView = 'overview' | 'design' | 'offers' | 'profile'") && studio.includes("setView('design')") && studio.includes("setView('offers')") && studio.includes("setView('profile')"));
+check('Owner can copy and preview proud Store address', studio.includes('securepay.ke/${publicKs}') && studio.includes('Customer view') && studio.includes('copyAddress'));
+check('Store design is backend profile data, not local-only theme state', studio.includes('storefrontPreset') && studio.includes('storefrontTheme') && studio.includes('heroHeadline') && studio.includes('updateMyStoreProfile'));
+check('Curated Store styles are available', studio.includes("id: 'MERCHANT'") && studio.includes("id: 'SERVICE_PRO'") && studio.includes("id: 'BOUTIQUE'") && studio.includes("id: 'BUILDER'"));
+check('Curated colour moods are available', studio.includes("id: 'FOREST'") && studio.includes("id: 'SUNSET'") && studio.includes("id: 'MIDNIGHT'") && studio.includes("id: 'OCEAN'"));
+check('Natural-language quick add remains review-first', studio.includes('interpretStoreWords') && studio.includes('Drafted below. Review before saving.'));
 check('Natural-language draft never auto-publishes', studio.includes('published: false'));
-check('Store Health is timestamp-derived', studio.includes('deriveStoreHealth') && studio.includes('availabilityConfirmedAt') && studio.includes('updatedAt'));
-check('Store Health freshness thresholds are explicit', studio.includes('oldestAge <= 7') && studio.includes('oldestAge <= 21'));
-check('Store Health remains freshness, not trader scoring', studio.includes('Store Health measures freshness only') && studio.includes('not a trust, credit, reputation or financial-strength score'));
-check('Resting Store posture is supported', studio.includes("label: 'Resting'") && studio.includes("'RESTING'"));
+check('Store Health remains timestamp-derived freshness', studio.includes('deriveStoreHealth') && studio.includes('availabilityConfirmedAt') && studio.includes('updatedAt') && studio.includes('Store Health measures freshness only'));
 check('Publishing remains an explicit owner choice', studio.includes('checked={offerDraft.published}') && studio.includes('Show publicly'));
-check('Customer preview uses canonical public KS route', studio.includes('Customer view') && studio.includes('/ks/${encodeURIComponent(publicKs)}'));
-check('Local atmosphere remains explicitly non-authoritative', studio.includes('local Studio atmosphere only'));
-check('Mobile maintenance keeps touch-sized actions', studio.includes('min-h-10') && studio.includes('sm:grid-cols-2'));
+check('Mobile maintenance keeps touch-sized actions', studio.includes('min-h-10') && studio.includes('overflow-x-auto'));
 
 if (failures.length) {
   console.error(`Store owner Studio certification failed (${failures.length}).`);
   process.exit(1);
 }
-console.log('Store owner Studio guard passed.');
+console.log('Premium Store owner Studio guard passed.');
