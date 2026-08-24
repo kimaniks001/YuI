@@ -1,11 +1,22 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { ArrowRight, HelpCircle, Home, UsersRound } from 'lucide-react';
 import LivingSecurePayMark from '../components/LivingSecurePayMark';
 import SystemStateRoom from '../components/SystemStateRoom';
 
 const G = '#3a7a1f';
+const DIRECT_KS_STORE = /^\/KS\d{3,}$/i;
 
 export default function NotFoundPage() {
+  const location = useLocation();
+
+  // securepay.ke/KS005 is the human-facing Store address. The existing
+  // /ks/KS005 route remains the canonical SPA implementation so older links,
+  // tests and deep links keep working while the short public address resolves.
+  if (DIRECT_KS_STORE.test(location.pathname)) {
+    const canonicalKs = location.pathname.slice(1).toUpperCase();
+    return <Navigate to={`/ks/${canonicalKs}`} replace />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#fafaf8' }}>
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#1a1a1a]/6 px-4 md:px-8 py-3">
