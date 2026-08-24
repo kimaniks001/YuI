@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { AlertTriangle, CheckCircle2, Clock3, LoaderCircle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock3, Loader2, RefreshCw } from 'lucide-react';
 
 interface StateProps {
   title: string;
@@ -24,7 +24,7 @@ function CompactState({ icon, tone, eyebrow, title, detail, action, role }: {
 }
 
 export function TraderLoadingState({ label = 'Updating your Market…' }: { label?: string }) {
-  return <CompactState icon={<LoaderCircle size={17} className="animate-spin" />} tone="loading" eyebrow="Checking" title={label} role="status" />;
+  return <CompactState icon={<Loader2 size={17} className="animate-spin" />} tone="loading" eyebrow="Checking" title={label} role="status" />;
 }
 export function TraderEmptyState({ title, detail }: StateProps) {
   return <CompactState icon={<CheckCircle2 size={17} />} tone="quiet" eyebrow="All clear" title={title} detail={detail} />;
