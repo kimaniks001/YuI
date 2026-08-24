@@ -3,11 +3,17 @@ import { SECUREPAY_EXPLORER_MODE } from '../lib/explorerMode';
 import { getCurrentWorld, isSimulatedWorldRuntime } from '../lib/worldMode';
 import type { SecurePayApiError, SecurePayResult } from './securepayTypes';
 
-function mapError(err: SecurePayApiError | null, fallback: string): string {
+function mapError(
+  err: SecurePayApiError | null,
+  fallback: string,
+  unauthorizedMessage?: string,
+): string {
   if (!err) return fallback;
   const { status, code } = err;
-  if (status === 401 || code === 'INVALID_OTP' || code === 'WRONG_OTP')
+  if (code === 'INVALID_OTP' || code === 'WRONG_OTP')
     return 'Verification failed. Please check the code and try again.';
+  if (status === 401)
+    return unauthorizedMessage ?? fallback;
   if (status === 410 || code === 'EXPIRED' || code === 'CHALLENGE_EXPIRED')
     return 'This verification has expired. Start again.';
   if (status === 429 || code === 'MAX_ATTEMPTS' || code === 'TOO_MANY_ATTEMPTS')
@@ -28,6 +34,13 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   authHeader?: string;
   skipForbiddenCheck?: boolean;
+  /**
+   * A 401 is deliberately generic in SecurePayAPI for several auth flows.
+   * The caller knows whether it was submitting primary credentials, an OTP,
+   * or an authenticated request; the shared client must not guess which
+   * factor failed from the status code alone.
+   */
+  unauthorizedMessage?: string;
 }
 
 export async function securePayFetch<T>(
@@ -85,7 +98,11 @@ export async function securePayFetch<T>(
       const body = await res.json().catch(() => ({}));
       return {
         ok: false,
-        error: mapError({ status: res.status, code: body.code, message: body.message }, 'Request failed. Please try again.'),
+        error: mapError(
+          { status: res.status, code: body.code, message: body.message },
+          'Request failed. Please try again.',
+          options.unauthorizedMessage,
+        ),
       };
     }
 
