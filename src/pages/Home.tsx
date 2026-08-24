@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
@@ -404,7 +404,7 @@ export default function Home({ reviewMode = false }: HomeProps) {
     navigate(reviewMode ? '/preview/create' : '/create/journey', { state: { intent: displayIntent } });
   };
 
-  const handleIntentKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleIntentKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       goCreate();
