@@ -35,12 +35,26 @@ export interface RequestOptions {
   authHeader?: string;
   skipForbiddenCheck?: boolean;
   /**
-   * A 401 is deliberately generic in SecurePayAPI for several auth flows.
-   * The caller knows whether it was submitting primary credentials, an OTP,
-   * or an authenticated request; the shared client must not guess which
-   * factor failed from the status code alone.
+   * SecurePayAPI deliberately uses generic 401 responses across primary
+   * credentials, OTP verification, and bearer-token checks. Callers may
+   * provide the safe message for the operation instead of making the client
+   * guess which secret or factor failed.
    */
   unauthorizedMessage?: string;
+}
+
+function defaultUnauthorizedMessage(path: string): string {
+  if (path === '/api/v1/auth/login') {
+    return 'KS Number or password could not be verified.';
+  }
+  if (
+    path === '/api/v1/auth/complete'
+    || path === '/api/v1/auth/signup/verify'
+    || path === '/api/v1/auth/recovery/verify'
+  ) {
+    return 'Verification failed. Please check the code and try again.';
+  }
+  return 'Your session could not be verified. Please sign in again.';
 }
 
 export async function securePayFetch<T>(
@@ -101,7 +115,7 @@ export async function securePayFetch<T>(
         error: mapError(
           { status: res.status, code: body.code, message: body.message },
           'Request failed. Please try again.',
-          options.unauthorizedMessage,
+          options.unauthorizedMessage ?? defaultUnauthorizedMessage(path),
         ),
       };
     }
