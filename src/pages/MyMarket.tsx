@@ -118,14 +118,14 @@ export default function MyMarket() {
                     maxLength={420}
                     aria-label="What would you like to agree next?"
                     placeholder="What would you like to agree next?"
-                    className="market-start-prompt-input"
+                    className="market-start-prompt-input block min-h-[42px] w-full resize-none border-0 bg-transparent p-0 font-display text-[21px] italic leading-tight text-ink outline-none placeholder:text-ink/55 focus:border-0 focus:outline-none focus:ring-0"
                   />
                   <span className="market-start-prompt-help">Buy, sell, hire, get paid, support someone, build or contribute — say it naturally.</span>
                 </div>
                 <button
                   type="submit"
                   disabled={!agreementDraft.trim()}
-                  className="market-start-prompt-arrow"
+                  className="market-start-prompt-arrow border-0 disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Start this agreement"
                 >
                   <ArrowRight size={22} />
