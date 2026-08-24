@@ -10,6 +10,10 @@ const experience = read('src/lib/creationExperience.ts');
 const engine = read('src/lib/creationEngine.ts');
 const shell = read('src/components/creation/CreationShell.tsx');
 const intent = read('src/lib/creationIntent.ts');
+const traderShell = read('src/components/trader/TraderShell.tsx');
+const traderHeader = read('src/components/trader/TraderPageHeader.tsx');
+const myMarket = read('src/pages/MyMarket.tsx');
+const traderContinuity = read('src/trader-public-continuity.css');
 
 for (const requiredKind of [
   'simple_purchase',
@@ -72,6 +76,30 @@ if (!intent.includes('funeral|burial|bereavement')) {
   fail('sensitive life contexts are not recognised by intent parsing');
 }
 
+// The signed-out Home is the visual master. Signed-in trader rooms must keep
+// the same official logo, atmosphere, editorial hierarchy and agreement-first CTA.
+if (!traderShell.includes('SecurePayLogo')) {
+  fail('signed-in trader shell is not using the official SecurePay logo');
+}
+if (!traderShell.includes('hp-atmosphere') || !traderShell.includes('hp-watermark')) {
+  fail('signed-in trader shell is missing the signed-out Market atmosphere');
+}
+if (!traderShell.includes('Start an agreement')) {
+  fail('signed-in primary CTA has drifted from agreement-first language');
+}
+if (!traderHeader.includes('trader-page-title')) {
+  fail('signed-in page headers are not using the shared editorial hierarchy');
+}
+if (!traderContinuity.includes("font-family: 'Cormorant Garamond'")) {
+  fail('signed-in continuity stylesheet lost the public editorial type language');
+}
+if (!myMarket.includes('signed-in-market-hero') || !myMarket.includes('market-start-prompt')) {
+  fail('My Market has drifted back to a plain dashboard composition');
+}
+if (!myMarket.includes('SecurePay is with the agreement')) {
+  fail('My Market is missing the living agreement-guide panel');
+}
+
 if (!process.exitCode) {
-  console.log('Intelligent adaptive journey guard passed.');
+  console.log('Intelligent adaptive journey and signed-in visual continuity guard passed.');
 }
