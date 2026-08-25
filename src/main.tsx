@@ -18,6 +18,7 @@ import KSProfile from './pages/KSProfile';
 import StoreOfferDetail from './pages/StoreOfferDetail';
 import SecureLinkJoin from './pages/SecureLinkJoin';
 import CreateJourney from './pages/CreateJourneyMaster';
+import CollectJourney from './pages/CollectJourney';
 import AgreementDetailWorkspace from './pages/AgreementDetailWorkspace';
 import AgreementFundingStart from './pages/AgreementFundingStart';
 import AgreementConsultation from './pages/AgreementConsultation';
@@ -70,8 +71,6 @@ import GameRoomsPage from './pages/GameRoomsPage';
 import GameMissionsPage from './pages/GameMissionsPage';
 import GameAchievementsPage from './pages/GameAchievementsPage';
 
-// Fixture-backed experience surfaces. Trainer routes reuse these approved
-// visual rooms without giving them authentication or live API authority.
 import ReviewGallery from './review/ReviewGallery';
 import PreviewJourneys from './pages/PreviewJourneys';
 import PreviewWorkspacePage from './pages/PreviewWorkspacePage';
@@ -93,6 +92,7 @@ import { PreviewBuilders, PreviewReferrals } from './pages/PreviewReferralEconom
 import './index.css';
 import './securepay-visual-constitution.css';
 import './home.css';
+import './collect.css';
 import './market-convergence.css';
 import './r14-accessibility.css';
 import './r15-global.css';
@@ -111,21 +111,16 @@ import './play-market.css';
 import './world-switcher.css';
 import './store-sharing.css';
 
-function Protected({ children }: { children: ReactNode }) {
-  return <RequireAuth>{children}</RequireAuth>;
-}
+function Protected({ children }: { children: ReactNode }) { return <RequireAuth>{children}</RequireAuth>; }
 
 function AppShell() {
   const location = useLocation();
   const world = getWorldFromPath(location.pathname);
   const reviewEnabled = import.meta.env.DEV || SECUREPAY_EXPLORER_MODE;
   const isReviewSurface = location.pathname === '/review' || location.pathname.startsWith('/preview/');
-
   return <div className={`sp-app-frame world-${world}`} data-securepay-world={world}>
     <MarketAtmosphereBackdrop />
     <Routes>
-      {/* REAL MARKET. These canonical URLs always render Market components.
-          Real authentication and all authoritative state remain SecurePayAPI-owned. */}
       <Route path="/" element={<Home />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<Signup />} />
@@ -136,6 +131,7 @@ function AppShell() {
       <Route path="/ks/:ksId/offers/:offerId" element={<StoreOfferDetail />} />
       <Route path="/create" element={<CreateJourney />} />
       <Route path="/create/journey" element={<CreateJourney />} />
+      <Route path="/collect" element={<CollectJourney />} />
       <Route path="/securelink/join" element={<SecureLinkJoin />} />
       <Route path="/securelink/join/:token" element={<SecureLinkJoin />} />
       <Route path="/group/:slug" element={<PublicGroupSecureLink />} />
@@ -167,8 +163,6 @@ function AppShell() {
       <Route path="/masters/:masterId" element={<Protected><TraderMasterDetail /></Protected>} />
       <Route path="/settings" element={<Protected><TraderSettings /></Protected>} />
       <Route path="/developers" element={<Protected><DeveloperJourney /></Protected>} />
-
-      {/* PUBLIC GUIDANCE / TRUST. These are informational Market surfaces. */}
       <Route path="/situations" element={<SituationsPage />} />
       <Route path="/help" element={<HelpCenter />} />
       <Route path="/help/articles" element={<HelpArticlesList />} />
@@ -182,9 +176,6 @@ function AppShell() {
       <Route path="/security" element={<SecurityPage />} />
       <Route path="/compliance" element={<CompliancePage />} />
       <Route path="/not-a-bank" element={<NotABankPage />} />
-
-      {/* TRAINER. Intentional guided learning product. Every demo remains
-          simulation-only and securePayFetch hard-blocks live API calls. */}
       <Route path="/trainer" element={<TrainerHome />} />
       <Route path="/trainer/session" element={<TrainerSession />} />
       <Route path="/trainer/map" element={<ExplorerMap />} />
@@ -194,6 +185,7 @@ function AppShell() {
       <Route path="/trainer/activate" element={<KSActivation previewMode />} />
       <Route path="/trainer/journeys" element={<PreviewJourneys />} />
       <Route path="/trainer/create" element={<CreateJourney previewMode />} />
+      <Route path="/trainer/collect" element={<CollectJourney previewMode />} />
       <Route path="/trainer/join" element={<PreviewJoiningPage />} />
       <Route path="/trainer/dashboard" element={<PreviewTraderHome />} />
       <Route path="/trainer/market" element={<PreviewMarketPage />} />
@@ -211,8 +203,6 @@ function AppShell() {
       <Route path="/trainer/responsive" element={<PreviewResponsiveCertification />} />
       <Route path="/trainer/themes" element={<PreviewMarketThemes />} />
       <Route path="/trainer/certification" element={<PreviewVisualCertification />} />
-
-      {/* Legacy Explorer aliases remain safe and redirect into Trainer. */}
       <Route path="/explore" element={<Navigate to="/trainer" replace />} />
       <Route path="/explore/journeys" element={<Navigate to="/trainer" replace />} />
       <Route path="/explore/review" element={<Navigate to="/trainer/recovery" replace />} />
@@ -220,9 +210,6 @@ function AppShell() {
       <Route path="/explore/responsive" element={<Navigate to="/trainer/responsive" replace />} />
       <Route path="/explore/themes" element={<Navigate to="/trainer/themes" replace />} />
       <Route path="/explore/certification" element={<Navigate to="/trainer/certification" replace />} />
-
-      {/* GAME. The new MW-13–18 surfaces use isolated Game authority. The
-          accepted Play-the-Market prototype remains available as a project board. */}
       <Route path="/game" element={<GameCyclePage />} />
       <Route path="/game/profile" element={<GameCyclePage />} />
       <Route path="/game/cards" element={<GameCardsPage />} />
@@ -233,15 +220,10 @@ function AppShell() {
       <Route path="/game/market" element={<PlayMarketBoard />} />
       <Route path="/game/project/:projectId" element={<PlayMarketProject />} />
       <Route path="/game/leaderboard" element={<PlayMarketLeaderboard />} />
-
-      {/* Legacy /play routes remain simulated and never gain Market API access. */}
       <Route path="/play" element={<PlayMarketHome />} />
       <Route path="/play/market" element={<PlayMarketBoard />} />
       <Route path="/play/project/:projectId" element={<PlayMarketProject />} />
       <Route path="/play/leaderboard" element={<PlayMarketLeaderboard />} />
-
-      {/* REVIEW ROOM. Development/review surfaces remain separate from the
-          real Market and are also classified as simulated by worldMode. */}
       {reviewEnabled && <>
         <Route path="/review" element={<ReviewGallery />} />
         <Route path="/preview/home" element={<Home reviewMode />} />
@@ -250,6 +232,7 @@ function AppShell() {
         <Route path="/preview/activate" element={<KSActivation previewMode />} />
         <Route path="/preview/journeys" element={<PreviewJourneys />} />
         <Route path="/preview/create" element={<CreateJourney previewMode />} />
+        <Route path="/preview/collect" element={<CollectJourney previewMode />} />
         <Route path="/preview/workspace" element={<PreviewWorkspacePage />} />
         <Route path="/preview/operational" element={<PreviewOperationalPage />} />
         <Route path="/preview/trader-home" element={<PreviewTraderHome />} />
@@ -269,10 +252,8 @@ function AppShell() {
         <Route path="/preview/themes" element={<PreviewMarketThemes />} />
         <Route path="/preview/certification" element={<PreviewVisualCertification />} />
       </>}
-
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
-
     {world === 'market' && !isReviewSurface && <FloatingAssistant />}
     {world === 'trainer' && !isReviewSurface && <ExplorerDock />}
     {!isReviewSurface && <WorldSwitcher />}
@@ -280,9 +261,5 @@ function AppShell() {
 }
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <MarketAtmosphereProvider><AuthProvider><AppShell /></AuthProvider></MarketAtmosphereProvider>
-    </BrowserRouter>
-  </StrictMode>,
+  <StrictMode><BrowserRouter><MarketAtmosphereProvider><AuthProvider><AppShell /></AuthProvider></MarketAtmosphereProvider></BrowserRouter></StrictMode>,
 );
