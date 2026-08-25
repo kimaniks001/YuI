@@ -1,11 +1,9 @@
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
-  Banknote,
   Check,
-  CheckCircle2,
   Eye,
   EyeOff,
   LockKeyhole,
@@ -77,6 +75,8 @@ const STEP_LABELS: Record<StepId, string> = {
   stages: 'Stages',
   review: 'Review',
 };
+
+const MASTER_STEPS: StepId[] = ['situation', 'you', 'people', 'agreement', 'money', 'checks', 'stages', 'review'];
 
 function topologyFromCounts(payers: number, recipients: number): AgreementTopology {
   if (payers > 1 && recipients > 1) return 'MANY_TO_MANY';
@@ -240,7 +240,7 @@ export default function CreateJourneyMaster({ previewMode = false }: CreateJourn
   const topology = blueprint.topology;
   const isGroup = topology === 'MANY_TO_ONE' || topology === 'MANY_TO_MANY';
   const isFlow = topology === 'ONE_TO_MANY' || topology === 'MANY_TO_MANY';
-  const steps = useMemo<StepId[]>(() => ['situation', 'you', 'people', 'agreement', 'money', 'checks', 'stages', 'review'], []);
+  const steps = MASTER_STEPS;
   const index = steps.indexOf(step);
   const mood = moodFromIntent(intent);
   const activeChecks = blueprint.checks.filter((check) => selectedChecks.includes(check.id));
