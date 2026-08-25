@@ -106,12 +106,18 @@ export default function AgreementConsultation() {
   if (!user || !session) return <Navigate to="/signin" replace />;
   if (!agreementId) return <Navigate to="/agreements" replace />;
 
+  // Capture narrowed authority for deferred handlers. These values belong to
+  // this authenticated render and prevent handlers from treating nullable hook
+  // state as if it were always available.
+  const accessToken = session.accessToken;
+  const currentAgreementId = agreementId;
+
   async function create(event: React.FormEvent) {
     event.preventDefault();
     const requestedMinutes = Number(minutes);
     if (!selectedMasterId || !briefing.trim() || !Number.isInteger(requestedMinutes) || requestedMinutes < 1) return;
     setBusy(true); setNotice(null);
-    const result = await createAgreementConsultation(session.accessToken, { agreementId, masterProfileId: selectedMasterId, requestedMinutes, briefingNotes: briefing.trim() });
+    const result = await createAgreementConsultation(accessToken, { agreementId: currentAgreementId, masterProfileId: selectedMasterId, requestedMinutes, briefingNotes: briefing.trim() });
     setBusy(false);
     if (!result.ok || !result.data) { setNotice(result.error || 'The Master could not be invited.'); return; }
     setSearchParams({ consultation: result.data.id }); setSelectedMasterId(''); setBriefing('');
@@ -120,41 +126,41 @@ export default function AgreementConsultation() {
   async function lifecycle(action: 'accept' | 'decline' | 'close' | 'revoke') {
     if (!active) return;
     setBusy(true); setNotice(null);
-    const result = action === 'accept' ? await acceptConsultation(session.accessToken, active.id)
-      : action === 'decline' ? await declineConsultation(session.accessToken, active.id)
-      : action === 'close' ? await closeConsultation(session.accessToken, active.id)
-      : await revokeConsultation(session.accessToken, active.id);
+    const result = action === 'accept' ? await acceptConsultation(accessToken, active.id)
+      : action === 'decline' ? await declineConsultation(accessToken, active.id)
+      : action === 'close' ? await closeConsultation(accessToken, active.id)
+      : await revokeConsultation(accessToken, active.id);
     setBusy(false);
     if (!result.ok) setNotice(result.error || 'That action is not available.'); else void load();
   }
 
   async function sendMessage(event: React.FormEvent) {
     event.preventDefault(); if (!active || !message.trim()) return;
-    setBusy(true); const result = await postConsultationMessage(session.accessToken, active.id, { body: message.trim() }); setBusy(false);
+    setBusy(true); const result = await postConsultationMessage(accessToken, active.id, { body: message.trim() }); setBusy(false);
     if (!result.ok) setNotice(result.error || 'Message could not be sent.'); else { setMessage(''); void load(); }
   }
 
   async function submitOpinion(event: React.FormEvent) {
     event.preventDefault(); if (!active || !opinionText.trim()) return;
-    setBusy(true); const result = await submitConsultationOpinion(session.accessToken, active.id, { opinionText: opinionText.trim() }); setBusy(false);
+    setBusy(true); const result = await submitConsultationOpinion(accessToken, active.id, { opinionText: opinionText.trim() }); setBusy(false);
     if (!result.ok) setNotice(result.error || 'Opinion could not be submitted.'); else { setOpinionText(''); void load(); }
   }
 
   async function requestExtension(event: React.FormEvent) {
     event.preventDefault(); if (!active) return;
     const additionalMinutes = Number(extensionMinutes); if (!Number.isInteger(additionalMinutes) || additionalMinutes < 1) return;
-    setBusy(true); const result = await requestConsultationExtension(session.accessToken, active.id, { additionalMinutes }); setBusy(false);
+    setBusy(true); const result = await requestConsultationExtension(accessToken, active.id, { additionalMinutes }); setBusy(false);
     if (!result.ok) setNotice(result.error || 'Extension could not be requested.'); else void load();
   }
 
   async function decideExtension(requestId: string, approve: boolean) {
     if (!active) return; setBusy(true);
-    const result = approve ? await approveConsultationExtension(session.accessToken, active.id, requestId) : await rejectConsultationExtension(session.accessToken, active.id, requestId);
+    const result = approve ? await approveConsultationExtension(accessToken, active.id, requestId) : await rejectConsultationExtension(accessToken, active.id, requestId);
     setBusy(false); if (!result.ok) setNotice(result.error || 'Extension decision could not be recorded.'); else void load();
   }
 
   return <TraderShell>
-    <Link to={`/agreements/${agreementId}`} className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-green-700"><ArrowLeft size={15} /> Agreement</Link>
+    <Link to={`/agreements/${currentAgreementId}`} className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-green-700"><ArrowLeft size={15} /> Agreement</Link>
     <TraderPageHeader eyebrow="Master consultation" title="Ask for experience. Keep your agreement authority." description="A Master can give a paid, scoped second opinion. The parties still decide. The Master cannot declare Payment Ready, release money or settle the agreement." />
     <div className="mb-5 grid gap-3 sm:grid-cols-3"><Boundary icon={<ShieldCheck size={17} />} title="Advisory only" body="The opinion is immutable advice, not a ruling." /><Boundary icon={<Clock3 size={17} />} title="Rate is snapshotted" body="SecurePayAPI owns the fee, PaymentIntent and access clock." /><Boundary icon={<MessageSquare size={17} />} title="Scoped access" body="The Master sees only what the backend permits." /></div>
     {loading && <TraderLoadingState />}
