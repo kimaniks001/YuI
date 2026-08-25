@@ -18,6 +18,8 @@
 //   - "I am paying" in the statement deterministically sets
 //     creatorIsLikelyPayer=true, but this is a hypothesis the user
 //     may still confirm or correct — not a backend assignment.
+//   - A saved intent may open the public trial journey. Trial mode is
+//     never authentication and can never unlock protected Market routes.
 // ═══════════════════════════════════════════════════════════════
 
 export type IntentFamily = 'trade' | 'life';
@@ -48,6 +50,15 @@ export interface CreationIntent {
 }
 
 const STORAGE_KEY = 'securepay_creation_intent';
+export const CREATION_TRIAL_STARTED_EVENT = 'securepay-creation-trial-started';
+export const CREATION_TRIAL_ENDED_EVENT = 'securepay-creation-trial-ended';
+export const CREATION_AUTH_REQUIRED_EVENT = 'securepay-creation-auth-required';
+export const CREATION_AUTH_COMPLETED_EVENT = 'securepay-creation-auth-completed';
+
+function emit(name: string): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(name));
+}
 
 export function saveCreationIntent(intent: CreationIntent): void {
   try {
@@ -56,6 +67,12 @@ export function saveCreationIntent(intent: CreationIntent): void {
     // sessionStorage may be unavailable (private mode, disabled) —
     // the router-state path still works without it.
   }
+
+  // The signed-out Home is intentionally a try-before-sign-in surface.
+  // Emitting this event lets AuthProvider expose a non-authoritative trial
+  // identity only to the creation journey so the visitor can experience
+  // SecurePay's agreement intelligence before authentication.
+  emit(CREATION_TRIAL_STARTED_EVENT);
 }
 
 export function loadCreationIntent(): CreationIntent | null {
@@ -76,6 +93,7 @@ export function clearCreationIntent(): void {
   } catch {
     // no-op
   }
+  emit(CREATION_TRIAL_ENDED_EVENT);
 }
 
 /**
@@ -99,12 +117,16 @@ export function createCreationIntentFromText(rawStatement: string): CreationInte
     ? `KES ${new Intl.NumberFormat('en-KE', { maximumFractionDigits: 2 }).format(numericAmount)}`
     : 'To be confirmed';
 
-  const family: IntentFamily = /family|mum|mom|mother|school|fees|support|help|welfare|church|neighbour|neighbor/.test(lower)
+  // "life" is about the human context, not the money topology. A wedding vendor
+  // can still be a one-to-one trade while the journey remains appropriately warm;
+  // funeral, medical and family arrangements should not sound like generic commerce.
+  const family: IntentFamily = /family|mum|mom|mother|school|fees|support|help|welfare|church|neighbour|neighbor|funeral|burial|bereavement|memorial|wedding|ruracio|marriage|hospital|medical|medicine|treatment|emergency/.test(lower)
     ? 'life'
     : 'trade';
 
   const subjectPatterns: Array<[RegExp, string]> = [
     [/land|plot|property/, 'Land purchase'],
+    [/fridge|refrigerator/, 'Fridge purchase'],
     [/sofa|couch|seat set/, 'Sofa purchase'],
     [/generator/, 'Generator purchase'],
     [/cement/, 'Cement supply'],
@@ -114,6 +136,9 @@ export function createCreationIntentFromText(rawStatement: string): CreationInte
     [/laptop|computer/, 'Computer'],
     [/furniture/, 'Furniture'],
     [/car|vehicle/, 'Vehicle'],
+    [/funeral|burial|memorial|bereavement/, 'Funeral support'],
+    [/wedding|ruracio|marriage/, 'Wedding arrangement'],
+    [/hospital|medical|medicine|treatment/, 'Medical support'],
     [/paint|painting|painter/, 'Painting work'],
     [/plumb|plumber/, 'Plumbing work'],
     [/build|builder|construction|contractor/, 'Building work'],
@@ -170,7 +195,7 @@ export function createCreationIntentFromText(rawStatement: string): CreationInte
     };
   }
 
-  if (/support|help|family|mum|mom|mother|school|fees|rent|medicine|caregiver/.test(lower)) {
+  if (/support|help|family|mum|mom|mother|school|fees|rent|medicine|caregiver|hospital|medical|treatment|emergency/.test(lower)) {
     return {
       id: 'custom',
       family: 'life',

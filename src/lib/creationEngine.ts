@@ -14,6 +14,11 @@ import type { CreationFacts } from './creationFacts';
 import type { CreationIntent } from './creationIntent';
 import { creatorIsLikelyPayer } from './creationIntent';
 import { isBackendSupported } from './agreementTopology';
+import {
+  getCreationExperience,
+  shouldAskContributionFrequency,
+  shouldAskStages,
+} from './creationExperience';
 
 // ─── Question identifiers ───────────────────────────────────────
 
@@ -22,13 +27,13 @@ export type QuestionId =
   | 'payer'           // "Are you the one paying?" — only when payer role is unknown
   // ONE_TO_ONE questions
   | 'counterparty'    // "Who is the [painter/recipient]?"
-  | 'stages'          // "What are the stages?"
-  | 'confirmer'       // "Who confirms the work?" — proposed info only
+  | 'stages'          // only when stages genuinely help the agreement
+  | 'confirmer'       // context-aware completion / handover preference
   // MANY_TO_ONE questions
   | 'contributors'    // "Who are the family members?" — add/invite
   | 'split'           // "How should KES 30,000 be shared?" — equal/custom
   | 'recipient'       // "Who is Mum?" — KSN lookup / invite
-  | 'frequency'       // "How often?" — only if not already known
+  | 'frequency'       // recurring cadence only when the context does not already imply it
   // ONE_TO_MANY questions
   | 'recipients'      // "Who are they?" — add KSNumbers to known roles
   | 'allocation'      // "How should KES 180,000 be shared?" — equal/custom
@@ -54,10 +59,11 @@ export interface Question {
  * set of facts — used to compute progress bar totals and to drive
  * forward/back navigation.
  *
- * Question planning is TOPOLOGY-AWARE. A MANY_TO_ONE agreement does NOT
- * reuse the ONE_TO_ONE sequence (counterparty → stages → confirmer).
- * It asks its own human questions: contributors, split, recipient,
- * frequency (only if missing).
+ * Planning is topology-aware AND context-aware. The topology says how
+ * people and money are arranged. The experience classifier says what
+ * kind of real-world agreement this is. That prevents a simple fridge
+ * purchase from being treated like a construction project while still
+ * allowing genuine staged work to expose stages.
  */
 export function plannedQuestions(facts: CreationFacts): QuestionId[] {
   const intent = facts.intent;
@@ -82,7 +88,9 @@ export function plannedQuestions(facts: CreationFacts): QuestionId[] {
   // 3. Topology-specific question planning
   if (topology === 'ONE_TO_ONE') {
     questions.push('counterparty');
-    questions.push('stages');
+    if (shouldAskStages(intent)) {
+      questions.push('stages');
+    }
     questions.push('confirmer');
     questions.push('review');
     return questions;
@@ -95,8 +103,8 @@ export function plannedQuestions(facts: CreationFacts): QuestionId[] {
     questions.push('split');
     // Recipient — always ask (who receives)
     questions.push('recipient');
-    // Frequency — only if not already understood from Home
-    if (!facts.frequency.value) {
+    // Frequency — skip when already known or the life event is naturally one-off
+    if (shouldAskContributionFrequency(intent, facts.frequency.value)) {
       questions.push('frequency');
     }
     // Review
@@ -133,10 +141,13 @@ export function plannedQuestions(facts: CreationFacts): QuestionId[] {
     return questions;
   }
 
-  // MANY_TO_MANY — not yet backend-backed
+  // Unknown / unsupported shapes stay conservative. Only show stages if
+  // the intent itself indicates that staged progress is meaningful.
   if (!isBackendSupported(topology)) {
     questions.push('counterparty');
-    questions.push('stages');
+    if (shouldAskStages(intent)) {
+      questions.push('stages');
+    }
     questions.push('confirmer');
     questions.push('unsupported');
     return questions;
@@ -297,6 +308,7 @@ export interface QuestionMeta {
 export function questionMeta(qid: QuestionId, facts: CreationFacts): QuestionMeta {
   const intent = facts.intent;
   const topology = facts.topology.topology;
+  const experience = getCreationExperience(intent);
 
   switch (qid) {
     case 'understood':
@@ -331,7 +343,7 @@ export function questionMeta(qid: QuestionId, facts: CreationFacts): QuestionMet
     case 'stages':
       return {
         id: 'stages',
-        title: 'Any milestones or stages?',
+        title: experience.stageTitle,
         shortLabel: 'Stages',
         skippable: true,
         proposedOnly: false,
@@ -340,8 +352,8 @@ export function questionMeta(qid: QuestionId, facts: CreationFacts): QuestionMet
     case 'confirmer':
       return {
         id: 'confirmer',
-        title: 'Who confirms the work?',
-        shortLabel: 'Confirmer',
+        title: experience.confirmationTitle,
+        shortLabel: experience.confirmationShortLabel,
         skippable: false,
         proposedOnly: true,
       };

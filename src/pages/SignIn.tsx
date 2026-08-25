@@ -6,7 +6,7 @@ import { safeReturnPath } from '../routing/returnPath';
 import LivingSecurePayMark from '../components/LivingSecurePayMark';
 
 export default function SignIn({ previewMode = false }: { previewMode?: boolean }) {
-  const { user, signIn, completeSignIn, resendChallenge, cancelChallenge, challenge } = useAuth();
+  const { session, signIn, completeSignIn, resendChallenge, cancelChallenge, challenge } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnTo = safeReturnPath(searchParams.get('returnTo'));
@@ -19,7 +19,10 @@ export default function SignIn({ previewMode = false }: { previewMode?: boolean 
   const [notice, setNotice] = useState('');
   const [previewChallenge, setPreviewChallenge] = useState(false);
 
-  if (user && !previewMode) return <Navigate to={returnTo} replace />;
+  // Only a genuine backend session counts as signed in. The public agreement
+  // trial may expose a placeholder user to CreateJourney, but it must never
+  // skip or redirect the real identity doorway.
+  if (session && !previewMode) return <Navigate to={returnTo} replace />;
   const otpStep = previewMode ? previewChallenge : Boolean(challenge);
 
   const submitCredentials = async () => {

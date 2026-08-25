@@ -2,6 +2,19 @@ import { SECUREPAY_API_BASE_URL, isForbiddenPath, FORBIDDEN_MESSAGE } from './se
 import { SECUREPAY_EXPLORER_MODE } from '../lib/explorerMode';
 import { getCurrentWorld, isSimulatedWorldRuntime } from '../lib/worldMode';
 import type { SecurePayApiError, SecurePayResult } from './securepayTypes';
+import {
+  CREATION_AUTH_COMPLETED_EVENT,
+  CREATION_AUTH_REQUIRED_EVENT,
+  CREATION_TRIAL_ENDED_EVENT,
+} from '../lib/creationIntent';
+
+let resumedCreationAccessToken: string | null = null;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener(CREATION_TRIAL_ENDED_EVENT, () => {
+    resumedCreationAccessToken = null;
+  });
+}
 
 function mapError(
   err: SecurePayApiError | null,
@@ -57,6 +70,55 @@ function defaultUnauthorizedMessage(path: string): string {
   return 'Your session could not be verified. Please sign in again.';
 }
 
+function isCreationRoute(): boolean {
+  return typeof window !== 'undefined' && window.location.pathname.startsWith('/create');
+}
+
+function isAgreementCreationRequest(path: string, options: RequestOptions): boolean {
+  return path === '/api/v1/agreements' && (options.method ?? 'GET') === 'POST';
+}
+
+/**
+ * The public Home deliberately allows a visitor to experience the agreement
+ * question engine before authentication. The first real Market write is the
+ * point at which identity becomes mandatory.
+ *
+ * Instead of throwing away the completed journey, pause that exact request,
+ * reveal CreateJourney's existing inline sign-in gate, and resume with the
+ * freshly issued access token. Nothing is written before authentication.
+ */
+async function waitForCreationAuthentication(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const finish = (token: string | null) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeoutId);
+      window.removeEventListener(CREATION_AUTH_COMPLETED_EVENT, handleCompleted as EventListener);
+      resolve(token);
+    };
+
+    const handleCompleted = (event: Event) => {
+      const detail = (event as CustomEvent<{ accessToken?: string }>).detail;
+      const token = detail?.accessToken?.trim() || null;
+      if (token) resumedCreationAccessToken = token;
+      finish(token);
+    };
+
+    window.addEventListener(CREATION_AUTH_COMPLETED_EVENT, handleCompleted as EventListener);
+
+    // Remove the temporary trial identity. CreateJourney remains mounted, so
+    // its state survives while its existing InlineAuthGate is rendered.
+    window.dispatchEvent(new Event(CREATION_AUTH_REQUIRED_EVENT));
+
+    // Do not leave a network request pending forever if the visitor walks away.
+    const timeoutId = window.setTimeout(() => finish(null), 10 * 60 * 1000);
+  });
+}
+
 export async function securePayFetch<T>(
   path: string,
   options: RequestOptions = {}
@@ -84,13 +146,33 @@ export async function securePayFetch<T>(
     return { ok: false, error: FORBIDDEN_MESSAGE, forbidden: true };
   }
 
+  let effectiveAuthHeader = options.authHeader;
+
+  // An async submit started while the visitor was still in public trial mode
+  // retains the render-time session value (null). After inline sign-in, reuse
+  // the just-issued token for the rest of that same creation sequence until
+  // React's normal session state is carrying it on subsequent renders.
+  if (!effectiveAuthHeader && resumedCreationAccessToken && isCreationRoute()) {
+    effectiveAuthHeader = resumedCreationAccessToken;
+  }
+
+  if (!effectiveAuthHeader && isAgreementCreationRequest(path, options) && isCreationRoute()) {
+    effectiveAuthHeader = (await waitForCreationAuthentication()) ?? undefined;
+    if (!effectiveAuthHeader) {
+      return {
+        ok: false,
+        error: 'Sign in is required before SecurePay can create this agreement. Your trial answers are still here.',
+      };
+    }
+  }
+
   const url = `${SECUREPAY_API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
   const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const headers: Record<string, string> = {
     ...(isFormDataBody ? {} : { 'Content-Type': 'application/json' }),
     ...options.headers,
   };
-  if (options.authHeader) headers.Authorization = `Bearer ${options.authHeader}`;
+  if (effectiveAuthHeader) headers.Authorization = `Bearer ${effectiveAuthHeader}`;
 
   try {
     const res = await fetch(url, {

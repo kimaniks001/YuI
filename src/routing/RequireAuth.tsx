@@ -5,7 +5,7 @@ import MarketOpeningRitual from '../components/MarketOpeningRitual';
 import { signInPath } from './returnPath';
 
 export default function RequireAuth({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { session, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -16,12 +16,15 @@ export default function RequireAuth({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user) {
+  // Protected Market routes require a genuine backend-issued session.
+  // A public creation trial may expose a placeholder `user` so the question
+  // engine can render, but it must never satisfy this boundary.
+  if (!session) {
     return <Navigate to={signInPath(`${location.pathname}${location.search}`)} replace />;
   }
 
   return <>
-    <MarketOpeningRitual authenticatedEntry traderKey={user.ksNumber} />
+    <MarketOpeningRitual authenticatedEntry traderKey={session.user.ksNumber} />
     {children}
   </>;
 }

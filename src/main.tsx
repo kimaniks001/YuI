@@ -17,8 +17,9 @@ import KSActivation from './pages/KSActivation';
 import KSProfile from './pages/KSProfile';
 import StoreOfferDetail from './pages/StoreOfferDetail';
 import SecureLinkJoin from './pages/SecureLinkJoin';
-import CreateJourney from './pages/CreateJourney';
+import CreateJourney from './pages/CreateJourneyMaster';
 import AgreementDetailWorkspace from './pages/AgreementDetailWorkspace';
+import AgreementFundingStart from './pages/AgreementFundingStart';
 import AgreementConsultation from './pages/AgreementConsultation';
 import AgreementRecovery from './pages/AgreementRecovery';
 import MarketBridge from './pages/MarketBridge';
@@ -151,6 +152,7 @@ function AppShell() {
       <Route path="/builders" element={<Protected><PlugDashboard /></Protected>} />
       <Route path="/agreements" element={<Protected><TraderAgreements /></Protected>} />
       <Route path="/agreements/:agreementId" element={<Protected><AgreementDetailWorkspace /></Protected>} />
+      <Route path="/agreements/:agreementId/fund" element={<Protected><AgreementFundingStart /></Protected>} />
       <Route path="/agreements/:agreementId/consultation" element={<Protected><AgreementConsultation /></Protected>} />
       <Route path="/agreements/:agreementId/recovery" element={<Protected><AgreementRecovery /></Protected>} />
       <Route path="/actions" element={<Protected><TraderActionCentre /></Protected>} />

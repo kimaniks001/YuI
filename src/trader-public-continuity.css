@@ -1,0 +1,482 @@
+/* Signed-in visual continuity
+   The approved signed-out Home remains the visual master.
+   These rules do not change agreement, identity or money authority. */
+
+.trader-public-shell {
+  min-height: 100vh;
+}
+
+.trader-public-shell .hp-atmosphere {
+  z-index: 0;
+}
+
+.trader-public-shell .hp-atmosphere + * {
+  position: relative;
+}
+
+.trader-master-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  min-height: 78px;
+  padding: 10px clamp(20px, 4vw, 72px);
+  display: grid;
+  grid-template-columns: minmax(210px, 1fr) auto minmax(260px, 1fr);
+  align-items: center;
+  gap: 22px;
+  border-bottom: 1px solid rgba(227, 225, 217, .72);
+  background: rgba(255, 254, 250, .91);
+  backdrop-filter: blur(16px);
+}
+
+.trader-master-logo {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  border-radius: 12px;
+}
+
+.trader-master-logo img {
+  width: clamp(168px, 13vw, 218px);
+  height: auto;
+}
+
+.trader-master-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(22px, 2.6vw, 42px);
+}
+
+.trader-master-nav a {
+  position: relative;
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  color: #2c2c2c;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 560;
+  white-space: nowrap;
+  transition: color .18s ease;
+}
+
+.trader-master-nav a:hover,
+.trader-master-nav a.is-active {
+  color: var(--hp-green-dark);
+}
+
+.trader-master-nav a.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1px;
+  height: 2px;
+  border-radius: 99px;
+  background: var(--hp-green);
+}
+
+.trader-master-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.trader-account-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(31, 122, 34, .12);
+  border-radius: 999px;
+  background: rgba(255,255,255,.86);
+  padding: 4px 10px 4px 5px;
+  color: #315f1c;
+  box-shadow: 0 5px 16px rgba(31, 122, 34, .04);
+}
+
+.trader-account-avatar {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f8fff4, #e3f2dc 70%);
+  box-shadow: inset 0 0 0 1px rgba(31, 122, 34, .08);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.trader-master-main {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: clamp(30px, 3.8vw, 58px) clamp(24px, 4.2vw, 70px) 56px;
+}
+
+.trader-page-header {
+  margin-bottom: clamp(26px, 3vw, 44px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.trader-page-eyebrow {
+  margin: 0;
+  color: var(--hp-green-dark);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+}
+
+.trader-page-title {
+  margin: 8px 0 0;
+  max-width: 900px;
+  color: #171717;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(48px, 5.2vw, 78px);
+  font-weight: 600;
+  line-height: .98;
+  letter-spacing: -.045em;
+}
+
+.trader-page-description {
+  margin: 12px 0 0;
+  max-width: 760px;
+  color: #676767;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.signed-in-identity-card {
+  min-width: 220px;
+  border: 1px solid rgba(31, 122, 34, .12);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(255,255,255,.9), rgba(239,248,233,.9));
+  padding: 16px 18px;
+  box-shadow: 0 9px 26px rgba(31, 122, 34, .055);
+}
+
+.signed-in-market-hero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr);
+  gap: clamp(22px, 3vw, 42px);
+  padding: clamp(22px, 3vw, 36px);
+  border: 1px solid rgba(31, 122, 34, .13);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(223,243,218,.8), transparent 19rem),
+    rgba(255,255,255,.82);
+  box-shadow: 0 14px 38px rgba(31, 122, 34, .055);
+}
+
+.signed-in-market-hero::after {
+  content: '';
+  position: absolute;
+  width: 310px;
+  height: 310px;
+  right: -110px;
+  bottom: -170px;
+  border: 34px solid rgba(31, 122, 34, .035);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.market-now-heading {
+  margin: 7px 0 0;
+  max-width: 760px;
+  color: #1a1a1a;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(34px, 3.3vw, 52px);
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -.035em;
+}
+
+.market-start-prompt {
+  margin-top: 22px;
+  width: 100%;
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 11px 11px 18px;
+  border: 1.4px solid rgba(31, 122, 34, .42);
+  border-radius: 15px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 8px 28px rgba(31,122,34,.07);
+  text-align: left;
+  cursor: pointer;
+}
+
+.market-start-prompt-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.market-start-prompt-label {
+  display: block;
+  color: #1d1d1d;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 21px;
+  font-style: italic;
+  line-height: 1.25;
+}
+
+.market-start-prompt-help {
+  display: block;
+  margin-top: 4px;
+  color: #777;
+  font-size: 11.5px;
+}
+
+.market-start-prompt-arrow {
+  display: inline-flex;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #2b8e2e, #166b1c);
+  color: white;
+  box-shadow: 0 8px 18px rgba(31,122,34,.17);
+}
+
+.market-guide-card {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
+  border: 1px solid rgba(31, 122, 34, .12);
+  border-radius: 18px;
+  background: rgba(255,255,255,.86);
+  padding: 18px;
+  box-shadow: 0 10px 28px rgba(31,122,34,.05);
+}
+
+.market-guide-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  background: #eef7e9;
+  padding: 6px 10px;
+  color: var(--hp-green-dark);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.market-guide-title {
+  margin: 14px 0 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 29px;
+  line-height: 1.05;
+  font-weight: 600;
+  letter-spacing: -.025em;
+}
+
+.market-guide-stats {
+  margin-top: 18px;
+  display: grid;
+  gap: 9px;
+}
+
+.market-guide-stat {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(31,122,34,.08);
+  color: #686868;
+  font-size: 12px;
+}
+
+.market-guide-stat strong {
+  color: #1f6f24;
+  font-size: 17px;
+}
+
+.market-search-card {
+  border: 1px solid rgba(31,122,34,.12);
+  border-radius: 16px;
+  background: rgba(255,255,255,.88);
+  padding: 5px 10px;
+  box-shadow: 0 8px 24px rgba(31,122,34,.04);
+}
+
+.market-section-shell {
+  border-radius: 20px;
+  padding: clamp(18px, 2.2vw, 26px);
+  border: 1px solid rgba(31,122,34,.1);
+  background: rgba(255,255,255,.7);
+  box-shadow: 0 9px 28px rgba(31,122,34,.035);
+}
+
+.market-section-shell.is-attention {
+  border-color: rgba(238,125,26,.22);
+  background: linear-gradient(145deg, rgba(255,255,255,.84), rgba(255,248,239,.9));
+}
+
+.market-section-icon {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #edf7e8;
+  color: var(--hp-green);
+}
+
+.market-section-shell.is-attention .market-section-icon {
+  background: #fff0df;
+  color: var(--hp-orange-dark);
+}
+
+.market-section-title {
+  margin: 1px 0 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.market-row-living {
+  display: flex;
+  min-height: 88px;
+  align-items: center;
+  gap: 15px;
+  border: 1px solid rgba(31,122,34,.1);
+  border-radius: 15px;
+  background: rgba(255,255,255,.9);
+  padding: 14px 16px;
+  box-shadow: 0 5px 17px rgba(31,122,34,.035);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.market-row-living:hover {
+  transform: translateY(-1px);
+  border-color: rgba(31,122,34,.23);
+  box-shadow: 0 9px 22px rgba(31,122,34,.07);
+}
+
+.market-row-living.is-attention {
+  border-color: rgba(238,125,26,.2);
+}
+
+.market-link-card {
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid rgba(31,122,34,.1);
+  border-radius: 17px;
+  background: rgba(255,255,255,.84);
+  padding: 18px;
+  box-shadow: 0 7px 22px rgba(31,122,34,.035);
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+
+.market-link-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(31,122,34,.07);
+}
+
+.market-link-card.is-life {
+  border-color: rgba(238,125,26,.2);
+  background: linear-gradient(145deg, rgba(255,255,255,.86), rgba(255,248,239,.88));
+}
+
+.trader-mobile-nav {
+  background: rgba(255,254,250,.94);
+  backdrop-filter: blur(16px);
+}
+
+@media (min-width: 1024px) {
+  .trader-page-header {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+}
+
+@media (max-width: 1080px) {
+  .trader-master-header {
+    grid-template-columns: minmax(180px, 1fr) auto;
+  }
+
+  .trader-master-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .trader-master-header {
+    min-height: 68px;
+    padding: 8px 16px;
+    grid-template-columns: minmax(126px, 1fr) auto;
+    gap: 10px;
+  }
+
+  .trader-master-logo img {
+    width: 140px;
+  }
+
+  .trader-master-actions {
+    gap: 7px;
+  }
+
+  .trader-master-actions .trader-environment-wrap {
+    display: none;
+  }
+
+  .trader-master-start-copy,
+  .trader-account-name {
+    display: none;
+  }
+
+  .trader-master-header .hp-start-btn {
+    width: 43px;
+    height: 43px;
+    min-height: 43px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 12px;
+  }
+
+  .trader-account-button {
+    min-height: 43px;
+    padding-right: 5px;
+  }
+
+  .trader-master-main {
+    padding: 26px 16px 104px;
+  }
+
+  .trader-page-title {
+    font-size: clamp(42px, 12vw, 58px);
+  }
+
+  .signed-in-market-hero {
+    grid-template-columns: 1fr;
+    padding: 19px;
+  }
+
+  .market-guide-card {
+    padding: 16px;
+  }
+}

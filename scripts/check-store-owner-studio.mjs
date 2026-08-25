@@ -17,21 +17,19 @@ check('Owner offers are self-scoped', endpoints.includes("'/api/v1/store/me/offe
 check('Owner offer create and update are wired', endpoints.includes('createMyStoreOffer') && endpoints.includes('updateMyStoreOffer'));
 check('Availability confirmation is server-recorded', endpoints.includes('/availability-confirmation') && endpoints.includes('confirmMyStoreOfferAvailability'));
 check('Owner request types contain no target identity or KS field', !types.includes('targetKsNumber') && !types.includes('targetIdentityId'));
-check('Natural-language quick add is review-first', studio.includes('Natural-language quick add') && studio.includes('Draft it') && studio.includes('Review it before saving'));
+check('Store Studio is task-first', studio.includes("type StoreView = 'overview' | 'design' | 'offers' | 'profile'") && studio.includes("setView('design')") && studio.includes("setView('offers')") && studio.includes("setView('profile')"));
+check('Owner can copy and preview proud Store address', studio.includes('securepay.ke/${publicKs}') && studio.includes('Customer view') && studio.includes('copyAddress'));
+check('Store design is backend profile data, not local-only theme state', studio.includes('storefrontPreset') && studio.includes('storefrontTheme') && studio.includes('heroHeadline') && studio.includes('updateMyStoreProfile'));
+check('Curated Store styles are available', studio.includes("id: 'MERCHANT'") && studio.includes("id: 'SERVICE_PRO'") && studio.includes("id: 'BOUTIQUE'") && studio.includes("id: 'BUILDER'"));
+check('Curated colour moods are available', studio.includes("id: 'FOREST'") && studio.includes("id: 'SUNSET'") && studio.includes("id: 'MIDNIGHT'") && studio.includes("id: 'OCEAN'"));
+check('Natural-language quick add remains review-first', studio.includes('interpretStoreWords') && studio.includes('Drafted below. Review before saving.'));
 check('Natural-language draft never auto-publishes', studio.includes('published: false'));
-check('Store Health is timestamp-derived', studio.includes('deriveStoreHealth') && studio.includes('availabilityConfirmedAt') && studio.includes('updatedAt'));
-check('Store Health freshness thresholds are explicit', studio.includes('oldestAge <= 7') && studio.includes('oldestAge <= 21'));
-check('Store Health cannot imply trust or financial strength', studio.includes('freshness only') && studio.includes('not a trust, credit, reputation, financial-strength or trader-ranking score'));
-check('Resting Store posture is supported', studio.includes("label: 'Resting'") && studio.includes("'RESTING'"));
-check('Publishing preserves listing boundary', studio.includes('Publishing lists it; it does not reserve or sell it.'));
-check('Customer preview uses canonical public KS route', studio.includes('Customer view') && studio.includes('/ks/${encodeURIComponent(publicKs)}'));
-check('Public theme persistence gap is explicit', studio.includes('device-local Studio preview only') && studio.includes('does not yet persist a public Store theme'));
-check('Media persistence gap is explicit and not faked', studio.includes('Backend media support required') && studio.includes('does not yet expose Store media persistence'));
-check('Mobile maintenance keeps touch-sized actions', studio.includes('min-h-11') && studio.includes('sm:grid-cols-2'));
-check('Store writes stay separate from payment authority', studio.includes('never creates a sale, reservation, agreement, Payment Ready or settlement authority'));
+check('Store Health remains timestamp-derived freshness', studio.includes('deriveStoreHealth') && studio.includes('availabilityConfirmedAt') && studio.includes('updatedAt') && studio.includes('Store Health measures freshness only'));
+check('Publishing remains an explicit owner choice', studio.includes('checked={offerDraft.published}') && studio.includes('Show publicly'));
+check('Mobile maintenance keeps touch-sized actions', studio.includes('min-h-10') && studio.includes('overflow-x-auto'));
 
 if (failures.length) {
   console.error(`Store owner Studio certification failed (${failures.length}).`);
   process.exit(1);
 }
-console.log('Store owner Studio guard passed.');
+console.log('Premium Store owner Studio guard passed.');

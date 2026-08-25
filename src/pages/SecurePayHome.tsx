@@ -1,24 +1,69 @@
-import { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Clock3, Copy, FileCheck2, Gift, Handshake, LayoutGrid, ListChecks, UsersRound, WalletCards } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import {
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Copy,
+  Gift,
+  Handshake,
+  LayoutGrid,
+  RefreshCw,
+  Store,
+  UsersRound,
+  WalletCards,
+} from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { useTraderWorkspace } from '../lib/useTraderWorkspace';
 import { getMyCircle, getMyReferralHistory } from '../api/r11TraderEndpoints';
 import type { CircleProfileResponse, ReferralHistoryResponse } from '../api/r11TraderTypes';
+import type { CurrentUserAgreementSummary } from '../api/securepayTypes';
 import TraderShell from '../components/trader/TraderShell';
-import TraderPageHeader from '../components/trader/TraderPageHeader';
 import TraderAgreementCard from '../components/trader/TraderAgreementCard';
-import { TraderEmptyState, TraderErrorState, TraderLoadingState, TraderUnavailableState } from '../components/trader/TraderStates';
+import TraderComingUp from '../components/trader/TraderComingUp';
+import { TraderLoadingState } from '../components/trader/TraderStates';
+import { createCreationIntentFromText, saveCreationIntent } from '../lib/creationIntent';
+import { agreementStatusLabel } from '../lib/agreementStateLanguage';
+import { formatDecimalMinorMoney } from '../lib/formatMinorMoney';
+import { countComingUpThisWeek } from '../lib/traderPlanning';
 
-function openAgreementPrompt() {
-  window.dispatchEvent(new Event('open-ask-securepay'));
+function greeting(name?: string | null): string {
+  const hour = new Date().getHours();
+  const part = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  return name ? `${part}, ${name}` : part;
+}
+
+function safeDeadline(agreement: CurrentUserAgreementSummary): Date | null {
+  const values = [
+    ...agreement.nextActions.map(action => action.deadline),
+    agreement.nextDeadline,
+  ].filter((value): value is string => Boolean(value));
+
+  const parsed = values
+    .map(value => new Date(value))
+    .filter(value => !Number.isNaN(value.getTime()))
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  return parsed[0] ?? null;
+}
+
+function sortByNearestDeadline(items: CurrentUserAgreementSummary[]): CurrentUserAgreementSummary[] {
+  return [...items].sort((a, b) => {
+    const aDeadline = safeDeadline(a)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    const bDeadline = safeDeadline(b)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    return aDeadline - bDeadline;
+  });
 }
 
 export default function SecurePayHome() {
   const { user, session } = useAuth();
+  const navigate = useNavigate();
   const { state, agreements, activity, activityAvailable, retry } = useTraderWorkspace();
   const [circle, setCircle] = useState<CircleProfileResponse | null>(null);
   const [referrals, setReferrals] = useState<ReferralHistoryResponse | null>(null);
+  const [agreementDraft, setAgreementDraft] = useState('');
+  const agreementInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     if (!session?.accessToken) return;
@@ -38,77 +83,206 @@ export default function SecurePayHome() {
 
   const name = user.displayName?.trim();
   const active = agreements.filter(item => !['CANCELLED', 'EXPIRED'].includes(item.status.toUpperCase()));
-  const closed = agreements.filter(item => ['CANCELLED', 'EXPIRED'].includes(item.status.toUpperCase()));
+  const attention = sortByNearestDeadline(active.filter(item => item.attentionRequired));
+  const comingUpCount = countComingUpThisWeek(active);
+  const primaryAgreement = attention[0] ?? sortByNearestDeadline(active.filter(item => safeDeadline(item) !== null))[0] ?? active[0] ?? null;
+  const primaryAction = primaryAgreement?.nextActions[0] ?? null;
+  const primaryDeadline = primaryAgreement ? safeDeadline(primaryAgreement) : null;
+  const primaryAmount = primaryAgreement?.proposedAmountMinor != null && primaryAgreement.currency
+    ? formatDecimalMinorMoney(primaryAgreement.currency, primaryAgreement.proposedAmountMinor)
+    : null;
 
-  return <TraderShell>
-    <TraderPageHeader
-      eyebrow={name ? `Good to see you, ${name}.` : 'Good to see you.'}
-      title="Welcome to the Market"
-      description="Start a trade, see what needs you, or open My Market to follow everything SecurePay can prove about your trading activity."
-      aside={<div className="min-w-[270px] rounded-2xl border border-ink/8 bg-white p-4 shadow-sm"><p className="text-xs text-ink/40">Your KSNumber</p><div className="mt-1 flex items-center gap-2"><span aria-label="KS Number" className="font-mono text-lg font-bold">{user.ksNumber || 'Not available yet'}</span>{user.ksNumber && <button type="button" aria-label="Copy KS Number" onClick={() => void navigator.clipboard.writeText(user.ksNumber!)} className="flex size-11 items-center justify-center rounded-full text-green-700"><Copy size={16} /></button>}</div></div>}
-    />
+  const situation = attention.length > 0
+    ? {
+        title: `${attention.length} agreement${attention.length === 1 ? '' : 's'} need${attention.length === 1 ? 's' : ''} you.`,
+        detail: attention.length === 1
+          ? 'SecurePay has an authoritative next action waiting for you.'
+          : 'SecurePay has authoritative next actions waiting for you.',
+      }
+    : active.length > 0
+      ? {
+          title: 'Nothing urgent is showing.',
+          detail: `${active.length} active agreement${active.length === 1 ? ' is' : 's are'} still moving.`,
+        }
+      : {
+          title: 'Ready when you are.',
+          detail: 'Start with what you want to agree.',
+        };
 
+  const startAgreement = () => {
+    const statement = agreementDraft.trim();
+    if (!statement) return;
+    const intent = createCreationIntentFromText(statement);
+    saveCreationIntent(intent);
+    navigate('/create/journey', { state: { intent } });
+  };
+
+  const usePlanningDate = (date: Date) => {
+    const label = date.toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long' });
+    setAgreementDraft(`I want to plan an agreement for ${label}`);
+    window.requestAnimationFrame(() => {
+      document.getElementById('start-agreement')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      agreementInputRef.current?.focus();
+    });
+  };
+
+  return <TraderShell actionCount={attention.length}>
     {state === 'loading' && <TraderLoadingState />}
-    {state === 'error' && <TraderErrorState title="Your trader workspace could not be loaded" detail="SecurePay could not retrieve your agreements. Nothing was changed. Check your connection and try again." onRetry={retry} />}
-    {state === 'ready' && <div className="space-y-6">
-      <section className="flex flex-col gap-4 rounded-2xl border border-green-700/10 bg-green-50/60 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-labelledby="my-market-heading">
-        <div className="flex gap-3">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-green-700 shadow-sm"><LayoutGrid size={19} /></span>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">My Market</p>
-            <h2 id="my-market-heading" className="mt-1 font-display text-xl">Everything you trade, in one place.</h2>
-            <p className="mt-1 max-w-2xl text-sm text-ink/55">Open your operating view for KSNumbers, Digital Store activity, agreements, account records and statements. Each item keeps the KSNumber that actually owns it.</p>
+
+    {state === 'error' && (
+      <section className="trader-home-inline-error" role="alert">
+        <div><strong>We couldn’t load your agreements.</strong><span>Nothing was changed.</span></div>
+        <button type="button" onClick={retry}><RefreshCw size={14} /> Try again</button>
+      </section>
+    )}
+
+    {state === 'ready' && <div className="trader-home-space">
+      <section className="trader-home-today" aria-labelledby="trader-home-title">
+        <div className="trader-home-topline">
+          <div className="min-w-0">
+            <p className="trader-home-kicker">{greeting(name)}</p>
+            <h1 id="trader-home-title">{situation.title}</h1>
+            <p className="trader-home-situation-copy">{situation.detail}</p>
           </div>
+          {user.ksNumber && (
+            <button
+              type="button"
+              className="trader-home-identity-chip"
+              onClick={() => void navigator.clipboard.writeText(user.ksNumber!)}
+              aria-label={`Copy KSNumber ${user.ksNumber}`}
+            >
+              <span>{user.ksNumber}</span><Copy size={13} />
+            </button>
+          )}
         </div>
-        <Link to="/market" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-semibold text-green-700">Open My Market <ArrowRight size={15} /></Link>
+
+        <nav className="trader-home-situation-strip" aria-label="Your agreement situation">
+          <Link to="/actions" className={attention.length ? 'has-attention' : ''}><span>Need you</span><strong>{attention.length}</strong></Link>
+          <Link to="/agreements"><span>Active</span><strong>{active.length}</strong></Link>
+          <a href="#coming-up"><span>This week</span><strong>{comingUpCount}</strong></a>
+          <a href="#recent-activity"><span>Recent</span><strong>{activityAvailable ? activity.length : '—'}</strong></a>
+        </nav>
+
+        <div className="trader-home-now-grid">
+          {primaryAgreement ? (
+            <Link
+              to={`/agreements/${encodeURIComponent(primaryAgreement.agreementId)}`}
+              className={`trader-home-focus${primaryAgreement.attentionRequired ? ' is-attention' : ''}`}
+            >
+              <div className="trader-home-focus-copy">
+                <span className="trader-home-focus-badge">{primaryAgreement.attentionRequired ? 'Needs you' : 'In focus'}</span>
+                <h2>{primaryAgreement.title}</h2>
+                <p>{primaryAction?.reason || agreementStatusLabel(primaryAgreement.status)}</p>
+              </div>
+              <div className="trader-home-focus-meta">
+                {primaryDeadline && <span><CalendarDays size={13} /> {primaryDeadline.toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}{' · '}{primaryDeadline.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}</span>}
+                {primaryAmount && <strong>{primaryAmount}</strong>}
+                <em>{primaryAgreement.attentionRequired ? 'Review now' : 'View agreement'} <ArrowRight size={14} /></em>
+              </div>
+            </Link>
+          ) : (
+            <div className="trader-home-calm">
+              <CheckCircle2 size={19} />
+              <div><strong>No active agreements yet.</strong><span>Your next agreement can start in your own words.</span></div>
+            </div>
+          )}
+
+          <form
+            id="start-agreement"
+            className="trader-home-agreement-entry"
+            aria-label="Start an agreement from your own words"
+            onSubmit={event => {
+              event.preventDefault();
+              startAgreement();
+            }}
+          >
+            <div>
+              <label htmlFor="signed-in-agreement-entry">What would you like to agree?</label>
+              <textarea
+                ref={agreementInputRef}
+                id="signed-in-agreement-entry"
+                value={agreementDraft}
+                onChange={event => setAgreementDraft(event.target.value)}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    startAgreement();
+                  }
+                }}
+                rows={2}
+                maxLength={420}
+                placeholder="I’m buying a fridge for KES 45,000…"
+                aria-label="What would you like to agree today?"
+              />
+            </div>
+            <button type="submit" disabled={!agreementDraft.trim()} aria-label="Start this agreement"><ArrowRight size={21} /></button>
+          </form>
+        </div>
+
+        <div id="coming-up">
+          <TraderComingUp agreements={active} onUseDate={usePlanningDate} />
+        </div>
       </section>
 
-      <section aria-labelledby="attention-heading" className="rounded-2xl border border-ink/8 bg-white p-5 shadow-sm sm:p-6">
-        <div className="mb-4 flex items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-green-700">Needs your action</p><h2 id="attention-heading" className="mt-1 font-display text-2xl">Your next legitimate actions</h2></div><Link to="/actions" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-green-700">Open Action Centre <ArrowRight size={15} /></Link></div>
-        <TraderUnavailableState title="Action feed not available yet" detail="SecurePay has not returned a session-wide action feed, so no commands are being guessed from agreement status. Your agreements are unchanged." />
-      </section>
-
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <SummaryCard icon={<Handshake />} value={active.length} label="Active agreements" />
-        <SummaryCard icon={<ListChecks />} value="—" label="Needs your action" secondary />
-        <SummaryCard icon={<Clock3 />} value="—" label="Under review" secondary />
-        <SummaryCard icon={<CheckCircle2 />} value={closed.length} label="Cancelled or expired" />
-      </section>
-
-      <section className="flex flex-col gap-4 rounded-2xl border border-green-700/10 bg-green-50/60 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-labelledby="account-setup-heading">
-        <div className="flex gap-3">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-green-700 shadow-sm"><WalletCards size={19} /></span>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">Account & settlement</p>
-            <h2 id="account-setup-heading" className="mt-1 font-display text-xl">Keep your Settlement Account ready.</h2>
-            <p className="mt-1 max-w-2xl text-sm text-ink/55">Your KSNumber virtual account handles SecurePay-side routing. A separate verified Settlement Account — bank, mobile money or partner Digital Wallet/current account — is the only destination a matured agreement may settle to.</p>
+      <section className="trader-home-section" aria-labelledby="home-active-agreements">
+        <div className="trader-home-section-head">
+          <div><p className="trader-home-kicker">Your agreements</p><h2 id="home-active-agreements">Active now</h2></div>
+          <Link to="/agreements">See all <ArrowRight size={14} /></Link>
+        </div>
+        {active.length ? (
+          <div className="trader-home-agreement-list">
+            {sortByNearestDeadline(active).slice(0, 2).map(item => <TraderAgreementCard key={item.agreementId} agreement={item} compact />)}
           </div>
-        </div>
-        <Link to="/money" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-semibold text-green-700">View account setup <ArrowRight size={15} /></Link>
+        ) : (
+          <button type="button" className="trader-home-empty-action" onClick={() => agreementInputRef.current?.focus()}>
+            <Handshake size={18} /><span><strong>No active agreements.</strong><small>Start one above whenever you’re ready.</small></span><ArrowRight size={14} />
+          </button>
+        )}
       </section>
 
-      {(circle || referrals) && <section aria-label="Circle and referral context" className="grid gap-3 md:grid-cols-2">
-        {circle && <Link to="/community" className="flex min-h-28 items-center justify-between gap-4 rounded-2xl border border-ink/8 bg-white p-4 shadow-sm transition hover:border-green-700/20">
-          <div className="flex items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-700"><UsersRound size={18} /></span><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-green-700">Your Circle</p><p className="mt-1 text-sm font-semibold">{circle.referredTraderCount} referred · {circle.activatedReferredTraderCount} activated</p><p className="mt-1 text-xs text-ink/45">Community context only</p></div></div><ArrowRight className="shrink-0 text-green-700" size={16} />
-        </Link>}
-        {referrals && <Link to="/referrals" className="flex min-h-28 items-center justify-between gap-4 rounded-2xl border border-ink/8 bg-white p-4 shadow-sm transition hover:border-green-700/20">
-          <div className="flex items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-700"><Gift size={18} /></span><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-green-700">Referrals</p><p className="mt-1 text-sm font-semibold">{referrals.totalReferred} introduced · {referrals.activatedOrLaterCount} activated or qualified</p><p className="mt-1 text-xs text-ink/45">Rewards appear only from backend evidence</p></div></div><ArrowRight className="shrink-0 text-green-700" size={16} />
-        </Link>}
-      </section>}
+      <section className="trader-home-section" aria-labelledby="around-your-trade">
+        <div className="trader-home-section-head">
+          <div><p className="trader-home-kicker">Around you</p><h2 id="around-your-trade">Your trade, one swipe away</h2></div>
+        </div>
+        <div className="trader-home-around-rail">
+          <HomeRailLink to="/market" icon={<LayoutGrid size={18} />} label="My Market" value={`${active.length} active`} />
+          <HomeRailLink to="/store" icon={<Store size={18} />} label="Your Store" value="Open studio" />
+          <HomeRailLink to="/money" icon={<WalletCards size={18} />} label="Money" value="Account & settlement" />
+          <HomeRailLink to="/community" icon={<UsersRound size={18} />} label="Your Circle" value={circle ? `${circle.activatedReferredTraderCount} active` : 'Community'} />
+          <HomeRailLink to="/referrals" icon={<Gift size={18} />} label="Referrals" value={referrals ? `${referrals.totalReferred} introduced` : 'Your introductions'} life />
+        </div>
+      </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.75fr)_minmax(300px,.75fr)]">
-        <section className="rounded-2xl border border-ink/8 bg-white p-5 shadow-sm sm:p-6">
-          <div className="mb-2 flex items-center justify-between"><h2 className="font-display text-2xl">Active agreements</h2><Link to="/agreements" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-green-700">See all <ArrowRight size={15} /></Link></div>
-          {active.length ? active.slice(0, 5).map(item => <TraderAgreementCard key={item.agreementId} agreement={item} compact />) : <TraderEmptyState title="No active agreements" detail="When an agreement becomes active, it will appear here. You can create a SecureLink whenever you are ready." />}
-        </section>
-        <section className="rounded-2xl border border-ink/8 bg-white p-5 shadow-sm sm:p-6"><h2 className="font-display text-2xl">Recent activity</h2>{!activityAvailable ? <div className="mt-4"><TraderUnavailableState title="Activity unavailable" detail="Recent movement could not be retrieved. Your agreements were not changed." /></div> : activity.length ? <ul className="mt-4 space-y-4">{activity.slice(0, 5).map(item => <li key={item.id} className="flex gap-3 border-b border-ink/8 pb-4 last:border-0"><span className="mt-1 size-2 shrink-0 rounded-full bg-green-600" /><div><p className="text-sm font-medium">{item.description}</p><time className="mt-1 block text-xs text-ink/40">{new Date(item.timestamp).toLocaleString('en-KE')}</time></div></li>)}</ul> : <div className="mt-4"><TraderEmptyState title="No recent movement" detail="Activity recorded for this account will appear here." /></div>}</section>
-      </div>
-
-      <section className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-green-700/10 bg-green-50/60 p-6 sm:flex-row sm:items-center"><div className="flex gap-3"><FileCheck2 className="mt-0.5 text-green-700" /><div><h2 className="font-display text-xl">Trader first. Agreement first.</h2><p className="mt-1 text-sm text-ink/55">Your work stays primary. Account and financial context only appears when SecurePay can prove it.</p></div></div><button type="button" onClick={openAgreementPrompt} className="sp-btn-primary inline-flex min-h-11 items-center px-5 text-sm">Start an agreement</button></section>
+      <section id="recent-activity" className="trader-home-section" aria-labelledby="home-recent-activity">
+        <div className="trader-home-section-head">
+          <div><p className="trader-home-kicker">Recently</p><h2 id="home-recent-activity">What just happened</h2></div>
+        </div>
+        {!activityAvailable ? (
+          <div className="trader-home-activity-unavailable"><span>Recent activity is unavailable. Your agreements are unchanged.</span><button type="button" onClick={retry}>Retry</button></div>
+        ) : activity.length ? (
+          <ul className="trader-home-activity-list">
+            {activity.slice(0, 2).map(item => (
+              <li key={item.id}>
+                <span className="trader-home-activity-dot" />
+                <div><strong>{item.description}</strong><time>{new Date(item.timestamp).toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</time></div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="trader-home-calm compact"><Clock3 size={17} /><span>No recent movement recorded.</span></div>
+        )}
+      </section>
     </div>}
   </TraderShell>;
 }
 
-function SummaryCard({ icon, value, label, secondary = false }: { icon: React.ReactNode; value: number | string; label: string; secondary?: boolean }) {
-  return <div className={`rounded-2xl border p-4 shadow-sm ${secondary ? 'border-ink/8 bg-white text-ink/55' : 'border-green-700/10 bg-white'}`}><div className="flex items-center gap-3"><span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-700">{icon}</span><div><p className="text-2xl font-semibold tabular-nums">{value}</p><p className="text-xs text-ink/50">{label}</p></div></div></div>;
+function HomeRailLink({ to, icon, label, value, life = false }: { to: string; icon: React.ReactNode; label: string; value: string; life?: boolean }) {
+  return (
+    <Link to={to} className={`trader-home-around-card${life ? ' is-life' : ''}`}>
+      <span className="trader-home-around-icon">{icon}</span>
+      <strong>{label}</strong>
+      <small>{value}</small>
+      <ArrowRight size={14} />
+    </Link>
+  );
 }

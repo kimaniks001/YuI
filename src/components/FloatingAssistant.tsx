@@ -36,6 +36,10 @@ export default function FloatingAssistant() {
     || location.pathname === '/agreements'
     || location.pathname.startsWith('/agreements/')
     || location.pathname.startsWith('/market');
+  const hasPrimaryAgreementEntry = location.pathname === '/'
+    || location.pathname === '/dashboard'
+    || location.pathname === '/profile'
+    || location.pathname === '/market';
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -68,6 +72,8 @@ export default function FloatingAssistant() {
     setOpen(false);
     navigate('/create/journey', { state: { intent } });
   };
+
+  if (hasPrimaryAgreementEntry) return null;
 
   return (
     <>

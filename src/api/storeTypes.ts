@@ -11,10 +11,30 @@ export type PublicStoreAvailabilityState =
   | 'FULLY_BOOKED'
   | 'RESTING';
 
+export type StorefrontPreset =
+  | 'SIGNATURE'
+  | 'MERCHANT'
+  | 'SERVICE_PRO'
+  | 'BOUTIQUE'
+  | 'BUILDER'
+  | 'COMMUNITY'
+  | 'CREATOR';
+
+export type StorefrontTheme =
+  | 'FOREST'
+  | 'SUNSET'
+  | 'MIDNIGHT'
+  | 'EARTH'
+  | 'OCEAN'
+  | 'MONOCHROME';
+
 export interface PublicStoreProfile {
   tagline: string | null;
   about: string | null;
   locationLabel: string | null;
+  heroHeadline: string | null;
+  storefrontPreset: StorefrontPreset;
+  storefrontTheme: StorefrontTheme;
   updatedAt: string | null;
 }
 
@@ -56,6 +76,9 @@ export interface StoreProfile {
   tagline: string | null;
   about: string | null;
   locationLabel: string | null;
+  heroHeadline: string | null;
+  storefrontPreset: StorefrontPreset;
+  storefrontTheme: StorefrontTheme;
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -64,6 +87,9 @@ export interface UpdateStoreProfileRequest {
   tagline: string | null;
   about: string | null;
   locationLabel: string | null;
+  heroHeadline: string | null;
+  storefrontPreset: StorefrontPreset;
+  storefrontTheme: StorefrontTheme;
 }
 
 export interface StoreOffer {

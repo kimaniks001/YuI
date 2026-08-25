@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
@@ -30,7 +30,7 @@ import {
 import SecurePayLogo from '../components/SecurePayLogo';
 import LivingSecurePayMark from '../components/LivingSecurePayMark';
 import MarketOpeningRitual from '../components/MarketOpeningRitual';
-import { saveCreationIntent } from '../lib/creationIntent';
+import { saveCreationIntent, type CreationIntent } from '../lib/creationIntent';
 
 type IntentFamily = 'trade' | 'life';
 
@@ -342,6 +342,26 @@ function inferCustomGuidance(statement: string, active: Intent): Pick<Intent, 'w
   };
 }
 
+function toCreationIntent(intent: Intent): CreationIntent {
+  // IMPORTANT: Home's visual Intent also contains `icon`, a React component
+  // function. Browser history uses structured cloning and cannot clone
+  // functions. Only the pure agreement fields are allowed across the route
+  // boundary, otherwise navigate() throws DataCloneError and the Home button
+  // appears to do nothing.
+  return {
+    id: intent.id,
+    family: intent.family,
+    statement: intent.statement,
+    who: intent.who,
+    what: intent.what,
+    amount: intent.amount,
+    mustHappen: intent.mustHappen,
+    nextStep: intent.nextStep,
+    nextStepShort: intent.nextStepShort,
+    moneyMoves: intent.moneyMoves,
+  };
+}
+
 interface HomeProps {
   reviewMode?: boolean;
 }
@@ -399,8 +419,17 @@ export default function Home({ reviewMode = false }: HomeProps) {
   };
 
   const goCreate = () => {
-    saveCreationIntent(displayIntent);
-    navigate(reviewMode ? '/preview/create' : '/create/journey', { state: { intent: displayIntent } });
+    if (inputTouched && !draftStatement.trim()) return;
+    const creationIntent = toCreationIntent(displayIntent);
+    saveCreationIntent(creationIntent);
+    navigate(reviewMode ? '/preview/create' : '/create/journey', { state: { intent: creationIntent } });
+  };
+
+  const handleIntentKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      goCreate();
+    }
   };
 
   const popularTrade = expandedTrade ? TRADE_INTENTS : TRADE_INTENTS.slice(0, 4);
@@ -596,14 +625,15 @@ export default function Home({ reviewMode = false }: HomeProps) {
                 value={draftStatement}
                 onFocus={prepareIntentInput}
                 onChange={(event) => { setInputTouched(true); setDraftStatement(event.target.value); }}
+                onKeyDown={handleIntentKeyDown}
                 aria-label="Tell SecurePay what you are trying to do"
                 placeholder="Tell us what you want to do…"
                 rows={2}
                 maxLength={420}
               />
-              <button type="button" onClick={goCreate} aria-label="Continue with this intention"><ArrowRight size={24} /></button>
+              <button type="button" onClick={goCreate} disabled={waitingForWords} aria-label="Continue with this intention"><ArrowRight size={24} /></button>
             </div>
-            <p className="hp-typing-hint">Try something like: buy a sofa, sell my bike, hire a builder, support my family</p>
+            <p className="hp-typing-hint">Press Enter or the arrow to continue. Shift+Enter adds a new line.</p>
             <p className="hp-option-intro">Or choose a popular option to get started</p>
 
             <div className="hp-family-cards">
@@ -613,7 +643,7 @@ export default function Home({ reviewMode = false }: HomeProps) {
                   <span className="hp-family-symbol hp-family-symbol-trade"><Handshake size={31} /></span>
                 </div>
                 {intentGrid(popularTrade, 'trade')}
-                <button type="button" className="hp-explore hp-explore-trade" onClick={() => setExpandedTrade((value) => !value)}>
+                <button type="button" className="hp-explore hp-explore-trade" onClick={() => setExpandedTrade((value) => !value)} aria-expanded={expandedTrade}>
                   {expandedTrade ? 'Show popular trade options' : 'Explore trade options'} <ArrowRight size={17} />
                 </button>
               </section>
@@ -624,7 +654,7 @@ export default function Home({ reviewMode = false }: HomeProps) {
                   <span className="hp-family-symbol hp-family-symbol-life"><TreePine size={31} /></span>
                 </div>
                 {intentGrid(popularLife, 'life')}
-                <button type="button" className="hp-explore hp-explore-life" onClick={() => setExpandedLife((value) => !value)}>
+                <button type="button" className="hp-explore hp-explore-life" onClick={() => setExpandedLife((value) => !value)} aria-expanded={expandedLife}>
                   {expandedLife ? 'Show popular life options' : 'Explore life options'} <ArrowRight size={17} />
                 </button>
               </section>
@@ -650,14 +680,15 @@ export default function Home({ reviewMode = false }: HomeProps) {
               value={draftStatement}
               onFocus={prepareIntentInput}
               onChange={(event) => { setInputTouched(true); setDraftStatement(event.target.value); }}
+              onKeyDown={handleIntentKeyDown}
               aria-label="Tell SecurePay what you are trying to do"
               placeholder="Tell us what you want to do…"
               rows={2}
               maxLength={420}
             />
-            <button type="button" onClick={goCreate} aria-label="Continue with this intention"><ArrowRight size={23} /></button>
+            <button type="button" onClick={goCreate} disabled={waitingForWords} aria-label="Continue with this intention"><ArrowRight size={23} /></button>
           </div>
-          <p className="hp-mobile-example">Try: buy a sofa, hire a fundi, support family, collect for school</p>
+          <p className="hp-mobile-example">Press Enter or the arrow to continue · Shift+Enter for a new line</p>
 
           {mobileLivePreview()}
 
@@ -695,6 +726,7 @@ export default function Home({ reviewMode = false }: HomeProps) {
                 type="button"
                 className={`hp-explore ${mobileFamily === 'trade' ? 'hp-explore-trade' : 'hp-explore-life'}`}
                 onClick={setMobileFamilyExpanded}
+                aria-expanded={mobileFamilyExpanded}
               >
                 {mobileFamilyExpanded ? 'Show popular options' : mobileFamily === 'trade' ? 'Explore trade options' : 'Explore life options'} <ArrowRight size={17} />
               </button>

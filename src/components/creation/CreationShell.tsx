@@ -4,9 +4,10 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Lightbulb, Loader2 } from 'lucide-react';
 import LivingSecurePayMark from '../LivingSecurePayMark';
 import { loadCreationIntent } from '../../lib/creationIntent';
+import { getCreationExperience, type CreationExperience } from '../../lib/creationExperience';
 import { MemoryBar } from './QuestionComponents';
 
 export function CompactProgress({ current, total }: { current: number; total: number }) {
@@ -104,20 +105,47 @@ export function CreationBottomAction({
   );
 }
 
-function encouragementFor(current: number, total: number) {
+function encouragementFor(current: number, total: number, experience: CreationExperience | null) {
   const ratio = total > 0 ? Math.max(0, Math.min(1, current / total)) : 0;
-  if (current <= 1 && total > 1) return {
-    title: 'This is what I get right now.',
-    body: 'I’ll carry what you said forward. I only need a few more answers so we can lock in a clear agreement before anything is created.',
-  };
+
+  if (current <= 1 && total > 1) {
+    if (experience) {
+      return {
+        title: experience.openingTitle,
+        body: experience.openingBody,
+      };
+    }
+    return {
+      title: 'This is what I get right now.',
+      body: 'I’ll carry what you said forward. I only need a few more answers so we can lock in a clear agreement before anything is created.',
+    };
+  }
+
   if (ratio < 0.7) return {
-    title: 'I’m carrying your answers forward.',
+    title: experience?.register === 'commercial'
+      ? 'Good — the agreement is getting clearer.'
+      : experience?.register === 'compassionate' || experience?.register === 'sensitive'
+        ? 'I’m keeping this as simple as I can.'
+        : 'I’m carrying your answers forward.',
     body: 'We are building the agreement one clear detail at a time. You do not need to repeat what you already told SecurePay.',
   };
+
   if (current < total) return {
-    title: 'We’re nearly ready to check the whole agreement.',
+    title: experience?.register === 'celebratory'
+      ? 'Almost there — one final check before you share the good news clearly.'
+      : experience?.register === 'calm'
+        ? 'We’re nearly ready to compare the whole record calmly.'
+        : 'We’re nearly ready to check the whole agreement.',
     body: 'A few final details remain. You can still go back and change any answer before anything is created.',
   };
+
+  if (experience) {
+    return {
+      title: experience.finalTitle,
+      body: experience.finalBody,
+    };
+  }
+
   return {
     title: 'This is the agreement I have from everything you told me.',
     body: 'Read it once from top to bottom. If it matches what you mean, confirm it below. Nothing is created until you do.',
@@ -153,7 +181,6 @@ export function CreationShell({
   bottomAction?: React.ReactNode;
   markState?: 'resting' | 'listening' | 'guiding' | 'caution' | 'review' | 'complete';
 }) {
-  const encouragement = encouragementFor(current, total);
   const isOpeningStep = current <= 1 && total > 1;
   const isFinalStep = total > 0 && current >= total;
   const resolvedState = markState ?? (isOpeningStep ? 'listening' : 'guiding');
@@ -166,14 +193,20 @@ export function CreationShell({
         : 'Shaping the agreement';
 
   // Creation intent contains only proposed, human-entered journey context.
-  // Reading it here is for conversational continuity only; it never grants
-  // payer, participant, funding, release, settlement or other backend authority.
+  // Reading it here is for conversational continuity and tone only; it never
+  // grants payer, participant, funding, release, settlement or other backend authority.
   const rememberedIntent = loadCreationIntent();
+  const experience = rememberedIntent ? getCreationExperience(rememberedIntent) : null;
+  const encouragement = encouragementFor(current, total, experience);
   const showOpeningEcho = isOpeningStep && Boolean(rememberedIntent?.statement?.trim());
   const showFinalEcho = isFinalStep && Boolean(rememberedIntent?.statement?.trim());
 
   return (
-    <div className="journey-room-shell min-h-screen bg-[#fffdf8] flex flex-col">
+    <div
+      className="journey-room-shell min-h-screen bg-[#fffdf8] flex flex-col"
+      data-emotional-register={experience?.register ?? 'supportive'}
+      data-agreement-experience={experience?.kind ?? 'general'}
+    >
       <div className="journey-wall-mark journey-wall-mark-a" aria-hidden="true" />
       <div className="journey-wall-mark journey-wall-mark-b" aria-hidden="true" />
       <div className="journey-wall-trail" aria-hidden="true"><span /><span /></div>
@@ -190,6 +223,22 @@ export function CreationShell({
               <p className="journey-cheer-copy">{encouragement.body}</p>
             </div>
           </div>
+
+          {isOpeningStep && experience && rememberedIntent && (
+            <section className="rounded-2xl border border-[#e4c28c]/45 bg-[#fff7e8] p-4 shadow-sm" aria-label="SecurePay agreement suggestion">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f28c28]/12 text-[#b75e0a]">
+                  <Lightbulb size={16} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#a55a12]">SecurePay suggests</p>
+                  <p className="mt-1 text-sm font-semibold leading-5 text-[#1a1a1a]/80">{experience.suggestionTitle}</p>
+                  <p className="mt-1 text-sm leading-5 text-[#1a1a1a]/62">{experience.suggestionBody}</p>
+                  <p className="mt-2 border-t border-[#b75e0a]/10 pt-2 text-xs leading-5 text-[#7b4b1f]/75">{experience.suggestionWhy}</p>
+                </div>
+              </div>
+            </section>
+          )}
 
           {(showOpeningEcho || showFinalEcho) && rememberedIntent && (
             <section className="rounded-2xl border border-[#3a7a1f]/12 bg-[#f4f8ef] p-4 shadow-sm" aria-label={showFinalEcho ? 'Original agreement request' : 'What you told SecurePay'}>
@@ -227,7 +276,7 @@ export function CreationShell({
               <p className="mt-3 border-t border-[#3a7a1f]/10 pt-3 text-xs leading-5 text-[#1a1a1a]/55">
                 {showFinalEcho
                   ? 'Is this correct? Compare your original words with the full agreement below. If something is wrong, go back and change it before creating anything.'
-                  : 'Now I need to ask you a few more questions so we can lock in the people, responsibilities and conditions. I will keep carrying these details forward.'}
+                  : 'Now I’ll ask only the questions that fit this kind of agreement. I will keep carrying the details you already gave me forward.'}
               </p>
             </section>
           )}
