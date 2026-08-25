@@ -4,7 +4,7 @@ import {
   Check,
   CircleDot,
   Clock3,
-  LoaderCircle,
+  Loader2,
   MessageCircleMore,
   RotateCcw,
   X,
@@ -63,7 +63,7 @@ function Badge({ state }: { state: MarkState }) {
   if (state === 'caution') return <AlertTriangle size={11} strokeWidth={2.7} aria-hidden="true" />;
   if (state === 'waiting') return <Clock3 size={11} strokeWidth={2.5} aria-hidden="true" />;
   if (state === 'review') return <MessageCircleMore size={11} strokeWidth={2.5} aria-hidden="true" />;
-  if (state === 'checking') return <LoaderCircle size={11} strokeWidth={2.6} aria-hidden="true" />;
+  if (state === 'checking') return <Loader2 size={11} strokeWidth={2.6} aria-hidden="true" />;
   if (state === 'action') return <Zap size={11} strokeWidth={2.7} aria-hidden="true" />;
   if (state === 'active') return <CircleDot size={11} strokeWidth={2.7} aria-hidden="true" />;
   if (state === 'failure') return <X size={11} strokeWidth={3} aria-hidden="true" />;
