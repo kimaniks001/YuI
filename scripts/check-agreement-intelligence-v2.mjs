@@ -48,7 +48,7 @@ for (const step of [
 ]) {
   requireSource(journey, step, `master journey retains ${step} step`);
 }
-requireSource(journey, "const mood = moodFromIntent(intent);", 'live preview responds to the human situation');
+requireSource(journey, 'const mood = moodFromIntent(intent);', 'live preview responds to the human situation');
 requireSource(journey, 'wedding|bride|groom|harusi', 'wedding context has its own visual mood');
 requireSource(journey, 'build|house|construction|contractor|fundi', 'construction context has its own visual mood');
 requireSource(journey, 'font-display', 'agreement conversation uses authored editorial typography');
@@ -74,8 +74,8 @@ requireSource(funding, 'listAgreementFundingOptions', 'funding page shows only b
 requireSource(funding, 'createAgreementPaymentIntent', 'funding page creates an agreement-bound payment intent');
 requireSource(funding, 'createAgreementFundingQuote', 'quoted rails use backend quote authority');
 requireSource(funding, 'initiatePaymentIntent', 'funding page initiates through the existing backend payment boundary');
-requireSource(funding, "rail === 'MPESA_STK'", 'M-PESA remains a supported eligible rail');
-requireSource(funding, "'PESALINK'", 'PesaLink remains supported when the backend offers it');
+requireSource(funding, "rail === 'MPESA_STK'", 'M-PESA gets the correct mobile-payment treatment when eligible');
+requireSource(funding, 'SecurePayAgreementFundingRailCode', 'all other rails, including PesaLink when eligible, remain backend-driven rather than hard-coded into the journey');
 requireSource(funding, 'waiting for the payment provider to confirm what happened', 'UI does not claim funding from initiation alone');
 
 if (!process.exitCode) console.log('Practical SecurePay agreement journey, topology and immediate-funding guard passed.');
