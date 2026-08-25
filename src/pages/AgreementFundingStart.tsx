@@ -72,7 +72,7 @@ export default function AgreementFundingStart() {
       getAgreement(agreementId, session.accessToken),
       getAgreementFundingAuthority(agreementId, session.accessToken),
       listAgreementFundingOptions(agreementId, session.accessToken),
-      listAgreementPaymentIntents(agreementId, session.accessToken),
+      listAgreementPaymentIntents(agreementId, 0, 20, session.accessToken),
     ]);
     if (agreementResult.ok && agreementResult.data) setAgreement(agreementResult.data);
     if (authorityResult.ok && authorityResult.data) setAuthority(authorityResult.data);
@@ -136,7 +136,7 @@ export default function AgreementFundingStart() {
         <section className="rounded-[28px] border border-[#1a1a1a]/9 bg-white p-5 shadow-[0_10px_35px_rgba(25,45,30,0.05)] sm:p-8">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#315f1c]">Money</p>
           <h1 className="mt-3 font-display text-[38px] font-medium leading-[1.02] text-[#173d27] sm:text-[48px]">Fund this SecureLink</h1>
-          <p className="mt-2 text-sm text-[#1a1a1a]/48">{justCreated ? 'The agreement is set. Money comes next.' : 'Choose an available funding method.'}</p>
+          <p className="mt-2 text-sm text-[#1a1a1a]/48">{justCreated ? 'The terms are set. Fund the agreement to put it into motion.' : 'Choose an available funding method.'}</p>
 
           {loading ? <div className="mt-8 flex items-center gap-2 text-sm text-[#1a1a1a]/45"><Loader2 size={17} className="animate-spin" /> Checking funding…</div> : <>
             {agreement?.proposedAmountMinor && <div className="mt-7"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#1a1a1a]/35">Amount to fund</span><div className="mt-1 text-4xl font-semibold tracking-tight text-[#173d27]">{formatMinorMoney(agreement.currency ?? 'KES', agreement.proposedAmountMinor)}</div></div>}
