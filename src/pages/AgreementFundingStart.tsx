@@ -96,7 +96,7 @@ export default function AgreementFundingStart() {
     if (!agreementId || !session?.accessToken || !selectedOption || busy || !authority?.authorized) return;
     setBusy(true); setError(null); setInitiated(null);
     try {
-      let paymentIntentId = latestIntent?.status === 'CREATED' ? latestIntent.paymentIntentId : null;
+      let paymentIntentId = latestIntent?.status === 'CREATED' ? latestIntent.id : null;
       if (!paymentIntentId) {
         const created = await createAgreementPaymentIntent(agreementId, { idempotencyKey: crypto.randomUUID() }, session.accessToken);
         if (!created.ok || !created.data) { setError(created.error ?? 'SecurePay could not prepare this payment.'); return; }
@@ -139,7 +139,7 @@ export default function AgreementFundingStart() {
           <p className="mt-2 text-sm text-[#1a1a1a]/48">{justCreated ? 'The agreement is set. Money comes next.' : 'Choose an available funding method.'}</p>
 
           {loading ? <div className="mt-8 flex items-center gap-2 text-sm text-[#1a1a1a]/45"><Loader2 size={17} className="animate-spin" /> Checking funding…</div> : <>
-            {agreement?.proposedAmountMinor && <div className="mt-7"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#1a1a1a]/35">Amount to fund</span><div className="mt-1 text-4xl font-semibold tracking-tight text-[#173d27]">{formatMinorMoney(agreement.proposedAmountMinor, agreement.currency ?? 'KES')}</div></div>}
+            {agreement?.proposedAmountMinor && <div className="mt-7"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#1a1a1a]/35">Amount to fund</span><div className="mt-1 text-4xl font-semibold tracking-tight text-[#173d27]">{formatMinorMoney(agreement.currency ?? 'KES', agreement.proposedAmountMinor)}</div></div>}
 
             {!authority?.authorized ? <div className="mt-7 rounded-2xl border border-amber-200 bg-amber-50 p-4"><p className="text-sm font-semibold text-amber-900">{authorityMessage(authority)}</p><Link to={`/agreements/${agreementId}`} className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-amber-800">Open agreement <ArrowRight size={15} /></Link></div> : <>
               <div className="mt-7"><p className="mb-3 text-sm font-semibold text-[#173d27]">How do you want to fund it?</p><div className="grid gap-3 sm:grid-cols-2">{options.map((option) => <button key={option.railCode} type="button" onClick={() => setSelectedRail(option.railCode)} className={`rounded-2xl border-2 p-4 text-left transition ${selectedRail === option.railCode ? 'border-[#315f1c] bg-[#f3f8ef]' : 'border-[#1a1a1a]/9 bg-white'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-full ${selectedRail === option.railCode ? 'bg-[#315f1c] text-white' : 'bg-[#1a1a1a]/6 text-[#1a1a1a]/50'}`}>{railIcon(option.railCode)}</span><strong className="mt-3 block text-sm text-[#173d27]">{option.displayName}</strong>{option.quoteAvailable && <span className="mt-1 block text-xs text-[#1a1a1a]/42">Current rail quote checked before you continue</span>}</button>)}</div></div>
